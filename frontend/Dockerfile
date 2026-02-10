@@ -46,7 +46,6 @@ COPY --from=builder /app/public ./public
 USER nextjs
 
 EXPOSE 3000
-ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "PORT=${PORT:-3000} node server.js"]
