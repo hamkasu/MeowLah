@@ -35,7 +35,6 @@ RUN adduser --system --uid 1001 appuser
 USER appuser
 
 EXPOSE 4000
-ENV PORT=4000
 
-# Run migrations then start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+# Start the server (tables created manually via SQL)
+CMD ["sh", "-c", "PORT=${PORT:-4000} node dist/server.js"]
