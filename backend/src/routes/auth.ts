@@ -22,11 +22,11 @@ const loginSchema = z.object({
 
 function generateTokens(userId: string) {
   const token = jwt.sign({ userId }, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN as string | number,
-  });
+    expiresIn: env.JWT_EXPIRES_IN,
+  } as jwt.SignOptions);
   const refreshToken = jwt.sign({ userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN as string | number,
-  });
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+  } as jwt.SignOptions);
   return { token, refreshToken };
 }
 
