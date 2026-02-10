@@ -3,12 +3,12 @@
 ## Architecture Evolution
 
 ### Phase 1: Launch (0–50K users)
-- **Single backend instance** on Railway/Render (2GB RAM)
-- **Managed PostgreSQL** (Railway / Supabase / Neon)
-- **Redis** (Upstash or Railway add-on)
+- **Railway project** with frontend + backend as separate services
+- **Managed PostgreSQL** (Railway add-on with PostGIS)
+- **Redis** (Railway add-on)
 - **Cloudflare R2** for media storage (free egress)
-- **Vercel** for frontend (edge CDN included)
-- **Estimated cost:** $20–50/month
+- **Cloudflare** as CDN in front of Railway frontend
+- **Estimated cost:** $18–40/month
 
 ### Phase 2: Growth (50K–200K users)
 - **Horizontal scaling:** 2–4 backend instances behind load balancer

@@ -17,10 +17,13 @@ import { errorHandler } from './middleware/error-handler';
 
 const app = express();
 
+// Trust Railway's proxy for correct IP detection (rate limiter, logging)
+app.set('trust proxy', 1);
+
 // Security
 app.use(helmet());
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: [env.FRONTEND_URL, 'http://localhost:3000'],
   credentials: true,
 }));
 
@@ -62,8 +65,9 @@ app.use('/v1/boosts', boostsRouter);
 // Global error handler
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
-  console.log(`[MeowLah API] Running on port ${env.PORT} (${env.NODE_ENV})`);
+// Bind to 0.0.0.0 — required for Railway containers
+app.listen(env.PORT, '0.0.0.0', () => {
+  console.log(`[MeowLah API] Running on 0.0.0.0:${env.PORT} (${env.NODE_ENV})`);
 });
 
 export default app;

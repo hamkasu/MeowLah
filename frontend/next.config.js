@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standalone output for Railway (self-contained Node.js server)
+  // Produces a minimal .next/standalone folder with only production deps
+  output: 'standalone',
+
   // Enable React strict mode for better development practices
   reactStrictMode: true,
 

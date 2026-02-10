@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { MemorialPage } from '@/components/memorial/MemorialPage';
 
 // Server-side data fetching for SEO — memorial pages are shareable
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
+// Uses Railway internal networking when available (avoids public round-trip)
+const API_URL = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
 
 interface PageProps {
   params: Promise<{ slug: string }>;

@@ -149,6 +149,6 @@ npm run dev              # Starts on http://localhost:3000
 - [Architecture](docs/ARCHITECTURE.md) — System diagram and data flow
 - [API Endpoints](docs/API_ENDPOINTS.md) — Full REST API reference
 - [Database Schema](docs/DATABASE_SCHEMA.sql) — PostgreSQL + PostGIS schema
-- [Deployment](docs/DEPLOYMENT.md) — Vercel + Railway guide
+- [Deployment](docs/DEPLOYMENT.md) — Railway deployment guide (frontend + backend)
 - [Monetization](docs/MONETIZATION.md) — Revenue streams and pricing
 - [Scaling Strategy](docs/SCALING_STRATEGY.md) — Plan for 100K-500K users
