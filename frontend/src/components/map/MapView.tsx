@@ -41,7 +41,14 @@ export function MapView({
     // Dynamically import Leaflet to avoid SSR issues
     const initMap = async () => {
       const L = await import('leaflet');
-      await import('leaflet/dist/leaflet.css');
+
+      // Load Leaflet CSS via link tag (dynamic CSS import not supported in Next.js)
+      if (!document.querySelector('link[href*="leaflet"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
 
       if (!mapRef.current || leafletMapRef.current) return;
 
