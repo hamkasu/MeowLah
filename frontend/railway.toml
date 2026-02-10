@@ -3,8 +3,11 @@ builder = "nixpacks"
 buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "HOSTNAME=0.0.0.0 npm run start"
+startCommand = "HOSTNAME=0.0.0.0 PORT=3000 npm run start"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+
+[service]
+internalPort = 3000
