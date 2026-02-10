@@ -43,6 +43,18 @@ const nextConfig = {
     ];
   },
 
+  // Proxy API requests to the backend so the browser never calls a
+  // cross-origin URL.  Works with Railway internal networking too.
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+    return [
+      {
+        source: '/v1/:path*',
+        destination: `${backendUrl}/v1/:path*`,
+      },
+    ];
+  },
+
   // Enable experimental features
   experimental: {
     // Optimize package imports for smaller bundles
