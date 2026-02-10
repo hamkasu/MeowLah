@@ -42,8 +42,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       toast.success('Welcome back to MeowLah!');
       onSuccess?.();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
+      let message = 'Login failed. Please check your credentials.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string; detail?: string; message?: string } } };
+        message = axiosErr.response?.data?.detail || axiosErr.response?.data?.error || axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       toast.error(message);
     } finally {
       setIsLoading(false);

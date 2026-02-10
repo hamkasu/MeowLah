@@ -125,8 +125,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       toast.success('Welcome to MeowLah! Your account is ready.');
       onSuccess?.();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      let message = 'Registration failed. Please try again.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string; detail?: string; message?: string } } };
+        message = axiosErr.response?.data?.detail || axiosErr.response?.data?.error || axiosErr.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       toast.error(message);
     } finally {
       setIsLoading(false);
