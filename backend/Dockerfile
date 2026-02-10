@@ -7,9 +7,9 @@ FROM node:20-alpine AS builder
 RUN apk add --no-cache python3 make g++ libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json ./
 COPY prisma ./prisma/
-RUN npm ci
+RUN npm install
 
 # Generate Prisma client
 RUN npx prisma generate
