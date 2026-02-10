@@ -22,10 +22,10 @@ const loginSchema = z.object({
 
 function generateTokens(userId: string) {
   const token = jwt.sign({ userId }, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN,
+    expiresIn: env.JWT_EXPIRES_IN as string | number,
   });
   const refreshToken = jwt.sign({ userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN as string | number,
   });
   return { token, refreshToken };
 }

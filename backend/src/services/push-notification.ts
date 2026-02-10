@@ -31,7 +31,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
 
     if (!user?.pushSubscription) return false;
 
-    const subscription = user.pushSubscription as webpush.PushSubscription;
+    const subscription = user.pushSubscription as unknown as webpush.PushSubscription;
     await webpush.sendNotification(subscription, JSON.stringify(payload));
 
     // Also store in DB notifications table
@@ -86,7 +86,7 @@ export async function notifyNearbyUsers(
 
     try {
       await webpush.sendNotification(
-        user.push_subscription as webpush.PushSubscription,
+        user.push_subscription as unknown as webpush.PushSubscription,
         JSON.stringify({
           title: `Lost Cat Alert: ${catName}`,
           body: `A cat named ${catName} was reported missing near your area. Tap to help.`,
