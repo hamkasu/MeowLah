@@ -3,15 +3,22 @@ import { v4 as uuid } from 'uuid';
 import sharp from 'sharp';
 import { env } from './env';
 
-export const s3 = new S3Client({
-  region: env.S3_REGION,
-  endpoint: env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: env.S3_ACCESS_KEY,
-    secretAccessKey: env.S3_SECRET_KEY,
-  },
-  forcePathStyle: true, // Required for R2/MinIO
-});
+let _s3: S3Client | null = null;
+
+export function getS3(): S3Client {
+  if (!_s3) {
+    _s3 = new S3Client({
+      region: env.S3_REGION,
+      endpoint: env.S3_ENDPOINT || undefined,
+      credentials: {
+        accessKeyId: env.S3_ACCESS_KEY,
+        secretAccessKey: env.S3_SECRET_KEY,
+      },
+      forcePathStyle: true, // Required for R2/MinIO
+    });
+  }
+  return _s3;
+}
 
 /**
  * Upload a file to S3-compatible storage.
@@ -42,7 +49,7 @@ export async function uploadFile(
 
   const key = `${folder}/${fileId}.${extension}`;
 
-  await s3.send(
+  await getS3().send(
     new PutObjectCommand({
       Bucket: env.S3_BUCKET,
       Key: key,
@@ -60,7 +67,7 @@ export async function uploadFile(
  */
 export async function deleteFile(fileUrl: string): Promise<void> {
   const key = fileUrl.replace(`${env.S3_PUBLIC_URL}/`, '');
-  await s3.send(
+  await getS3().send(
     new DeleteObjectCommand({
       Bucket: env.S3_BUCKET,
       Key: key,

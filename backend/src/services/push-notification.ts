@@ -4,11 +4,15 @@ import { prisma } from '../config/database';
 
 // Configure VAPID keys for Web Push
 if (env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    env.VAPID_SUBJECT,
-    env.VAPID_PUBLIC_KEY,
-    env.VAPID_PRIVATE_KEY
-  );
+  try {
+    webpush.setVapidDetails(
+      env.VAPID_SUBJECT,
+      env.VAPID_PUBLIC_KEY,
+      env.VAPID_PRIVATE_KEY
+    );
+  } catch (err) {
+    console.warn('[Push] Failed to set VAPID keys, push notifications disabled:', (err as Error).message);
+  }
 }
 
 interface PushPayload {
