@@ -55,7 +55,7 @@ export default function FeedPage() {
       {!isAuthenticated && (
         <div className="bg-primary-50 border-b border-primary-100 px-4 py-3 text-center">
           <p className="text-sm text-primary-800">
-            <Link href="/auth/login" className="font-semibold underline">Sign in</Link> to post photos and follow cat lovers
+            <Link href="/login" className="font-semibold underline">Sign in</Link> to post photos and follow cat lovers
           </p>
         </div>
       )}
