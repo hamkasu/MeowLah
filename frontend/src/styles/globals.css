@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply antialiased text-gray-900 bg-white;
+  }
+}
+
+@layer components {
+  /* Memorial page styles — respectful, grief-safe design */
+  .memorial-container {
+    @apply font-memorial bg-memorial-50 min-h-screen;
+  }
+
+  .memorial-title {
+    @apply text-3xl font-semibold text-memorial-800 tracking-wide;
+  }
+
+  /* Candle animation */
+  .candle-flame {
+    width: 12px;
+    height: 24px;
+    background: radial-gradient(ellipse at bottom, #ffd700, #ff8c00, transparent);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: candle-flicker 3s ease-in-out infinite;
+    filter: blur(0.5px);
+  }
+
+  @keyframes candle-flicker {
+    0%, 100% { transform: scale(1) rotate(-1deg); opacity: 1; }
+    25% { transform: scale(1.05) rotate(1deg); opacity: 0.9; }
+    50% { transform: scale(0.95) rotate(-0.5deg); opacity: 0.7; }
+    75% { transform: scale(1.02) rotate(0.5deg); opacity: 0.85; }
+  }
+}

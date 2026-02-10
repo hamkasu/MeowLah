@@ -1,0 +1,363 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuidOssp(map: "uuid-ossp"), postgis]
+}
+
+model User {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email               String    @unique @db.VarChar(255)
+  username            String    @unique @db.VarChar(50)
+  passwordHash        String    @map("password_hash") @db.VarChar(255)
+  displayName         String?   @map("display_name") @db.VarChar(100)
+  avatarUrl           String?   @map("avatar_url")
+  bio                 String?
+  locationLat         Float?    @map("location_lat")
+  locationLng         Float?    @map("location_lng")
+  locationCity        String?   @map("location_city") @db.VarChar(100)
+  isVerifiedRescuer   Boolean   @default(false) @map("is_verified_rescuer")
+  isPremium           Boolean   @default(false) @map("is_premium")
+  pushSubscription    Json?     @map("push_subscription")
+  notificationRadiusKm Int     @default(10) @map("notification_radius_km")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  catProfiles     CatProfile[]
+  posts           Post[]
+  postLikes       PostLike[]
+  comments        Comment[]
+  lostCats        LostCat[]
+  foundCats       FoundCat[]
+  catSightings    CatSighting[]
+  memorials       Memorial[]
+  tributes        MemorialTribute[]
+  condolences     Condolence[]
+  paidBoosts      PaidBoost[]
+  subscriptions   Subscription[]
+  notifications   Notification[]
+  followers       Follow[]      @relation("following")
+  following       Follow[]      @relation("followers")
+
+  @@map("users")
+}
+
+model CatProfile {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  ownerId     String   @map("owner_id") @db.Uuid
+  name        String   @db.VarChar(100)
+  breed       String?  @db.VarChar(100)
+  color       String?  @db.VarChar(100)
+  ageYears    Int?     @map("age_years")
+  ageMonths   Int?     @map("age_months")
+  gender      String?  @db.VarChar(20)
+  isNeutered  Boolean? @map("is_neutered")
+  photoUrl    String?  @map("photo_url")
+  description String?
+  traits      Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  posts    Post[]
+  lostCats LostCat[]
+
+  @@index([ownerId])
+  @@map("cat_profiles")
+}
+
+model Post {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  authorId      String    @map("author_id") @db.Uuid
+  catProfileId  String?   @map("cat_profile_id") @db.Uuid
+  caption       String?
+  mediaUrls     String[]  @map("media_urls")
+  mediaType     String    @default("image") @map("media_type") @db.VarChar(20)
+  hashtags      String[]
+  locationName  String?   @map("location_name") @db.VarChar(200)
+  locationLat   Float?    @map("location_lat")
+  locationLng   Float?    @map("location_lng")
+  likeCount     Int       @default(0) @map("like_count")
+  commentCount  Int       @default(0) @map("comment_count")
+  isBoosted     Boolean   @default(false) @map("is_boosted")
+  boostExpiresAt DateTime? @map("boost_expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  catProfile CatProfile? @relation(fields: [catProfileId], references: [id], onDelete: SetNull)
+  likes      PostLike[]
+  comments   Comment[]
+
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+model PostLike {
+  userId    String   @map("user_id") @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  authorId   String   @map("author_id") @db.Uuid
+  postId     String?  @map("post_id") @db.Uuid
+  memorialId String?  @map("memorial_id") @db.Uuid
+  parentId   String?  @map("parent_id") @db.Uuid
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post     Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  memorial Memorial? @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([memorialId])
+  @@map("comments")
+}
+
+model Follow {
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model LostCat {
+  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  reporterId       String    @map("reporter_id") @db.Uuid
+  catProfileId     String?   @map("cat_profile_id") @db.Uuid
+  name             String    @db.VarChar(100)
+  breed            String?   @db.VarChar(100)
+  color            String?   @db.VarChar(100)
+  description      String
+  photoUrls        String[]  @map("photo_urls")
+  lastSeenLat      Float     @map("last_seen_lat")
+  lastSeenLng      Float     @map("last_seen_lng")
+  lastSeenAddress  String?   @map("last_seen_address")
+  lastSeenAt       DateTime? @map("last_seen_at")
+  contactPhone     String?   @map("contact_phone") @db.VarChar(20)
+  contactWhatsapp  String?   @map("contact_whatsapp") @db.VarChar(20)
+  rewardAmount     Decimal?  @map("reward_amount") @db.Decimal(10, 2)
+  status           String    @default("active") @db.VarChar(20)
+  isBoosted        Boolean   @default(false) @map("is_boosted")
+  boostExpiresAt   DateTime? @map("boost_expires_at")
+  featureVector    Json?     @map("feature_vector")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  reporter   User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  catProfile CatProfile?  @relation(fields: [catProfileId], references: [id], onDelete: SetNull)
+  sightings  CatSighting[]
+  foundMatches FoundCat[]
+
+  @@index([reporterId])
+  @@index([status])
+  @@map("lost_cats")
+}
+
+model FoundCat {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  reporterId      String    @map("reporter_id") @db.Uuid
+  description     String
+  photoUrls       String[]  @map("photo_urls")
+  foundLat        Float     @map("found_lat")
+  foundLng        Float     @map("found_lng")
+  foundAddress    String?   @map("found_address")
+  foundAt         DateTime? @map("found_at")
+  contactPhone    String?   @map("contact_phone") @db.VarChar(20)
+  status          String    @default("active") @db.VarChar(20)
+  featureVector   Json?     @map("feature_vector")
+  matchedLostCatId String?  @map("matched_lost_cat_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  reporter     User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  matchedLostCat LostCat? @relation(fields: [matchedLostCatId], references: [id])
+
+  @@index([reporterId])
+  @@index([status])
+  @@map("found_cats")
+}
+
+model CatSighting {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  lostCatId String   @map("lost_cat_id") @db.Uuid
+  reporterId String  @map("reporter_id") @db.Uuid
+  lat       Float
+  lng       Float
+  address   String?
+  note      String?
+  photoUrl  String?  @map("photo_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lostCat  LostCat @relation(fields: [lostCatId], references: [id], onDelete: Cascade)
+  reporter User    @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([lostCatId])
+  @@map("cat_sightings")
+}
+
+model Memorial {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  slug           String    @unique @db.VarChar(200)
+  creatorId      String    @map("creator_id") @db.Uuid
+  catProfileId   String?   @map("cat_profile_id") @db.Uuid
+  catName        String    @map("cat_name") @db.VarChar(100)
+  catBreed       String?   @map("cat_breed") @db.VarChar(100)
+  catColor       String?   @map("cat_color") @db.VarChar(100)
+  catPhotoUrl    String?   @map("cat_photo_url")
+  dateOfBirth    DateTime? @map("date_of_birth") @db.Date
+  dateOfPassing  DateTime? @map("date_of_passing") @db.Date
+  ageText        String?   @map("age_text") @db.VarChar(100)
+  lifeStory      String?   @map("life_story")
+  galleryUrls    String[]  @map("gallery_urls")
+  visibility     String    @default("public") @db.VarChar(20)
+  theme          String    @default("default") @db.VarChar(50)
+  isPremiumTheme Boolean   @default(false) @map("is_premium_theme")
+  candleCount    Int       @default(0) @map("candle_count")
+  flowerCount    Int       @default(0) @map("flower_count")
+  showOnWall     Boolean   @default(true) @map("show_on_wall")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  creator     User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  tributes    MemorialTribute[]
+  condolences Condolence[]
+
+  @@index([creatorId])
+  @@index([slug])
+  @@index([visibility])
+  @@map("memorials")
+}
+
+model MemorialTribute {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  memorialId  String   @map("memorial_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  tributeType String   @map("tribute_type") @db.VarChar(20)
+  message     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([memorialId])
+  @@map("memorial_tributes")
+}
+
+model Condolence {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  memorialId String   @map("memorial_id") @db.Uuid
+  authorId   String   @map("author_id") @db.Uuid
+  message    String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([memorialId])
+  @@map("condolences")
+}
+
+model PaidBoost {
+  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  targetType       String    @map("target_type") @db.VarChar(20)
+  targetId         String    @map("target_id") @db.Uuid
+  amount           Decimal   @db.Decimal(10, 2)
+  currency         String    @default("MYR") @db.VarChar(3)
+  durationHours    Int       @map("duration_hours")
+  paymentStatus    String    @default("pending") @map("payment_status") @db.VarChar(20)
+  paymentProvider  String?   @map("payment_provider") @db.VarChar(50)
+  paymentReference String?   @map("payment_reference") @db.VarChar(255)
+  startsAt         DateTime? @map("starts_at")
+  expiresAt        DateTime? @map("expires_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([targetType, targetId])
+  @@map("paid_boosts")
+}
+
+model Subscription {
+  id               String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  plan             String   @db.VarChar(50)
+  status           String   @default("active") @db.VarChar(20)
+  amount           Decimal  @db.Decimal(10, 2)
+  currency         String   @default("MYR") @db.VarChar(3)
+  paymentProvider  String?  @map("payment_provider") @db.VarChar(50)
+  paymentReference String?  @map("payment_reference") @db.VarChar(255)
+  startsAt         DateTime @map("starts_at")
+  expiresAt        DateTime @map("expires_at")
+  autoRenew        Boolean  @default(true) @map("auto_renew")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Notification {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String   @db.VarChar(50)
+  title     String?  @db.VarChar(200)
+  body      String?
+  data      Json?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model SponsoredListing {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  advertiserName  String    @map("advertiser_name") @db.VarChar(200)
+  title           String    @db.VarChar(200)
+  description     String?
+  imageUrl        String?   @map("image_url")
+  linkUrl         String    @map("link_url")
+  placement       String    @db.VarChar(50)
+  cpcAmount       Decimal?  @map("cpc_amount") @db.Decimal(10, 4)
+  cpmAmount       Decimal?  @map("cpm_amount") @db.Decimal(10, 4)
+  impressionCount Int       @default(0) @map("impression_count")
+  clickCount      Int       @default(0) @map("click_count")
+  isActive        Boolean   @default(true) @map("is_active")
+  startsAt        DateTime? @map("starts_at")
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("sponsored_listings")
+}
