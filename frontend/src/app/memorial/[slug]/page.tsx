@@ -57,9 +57,20 @@ export default async function MemorialSlugPage({ params }: PageProps) {
       );
     }
 
-    const memorial = await memorialRes.ok ? memorialRes.json() : null;
+    const memorial = memorialRes.ok ? await memorialRes.json() : null;
     const condolencesData = condolencesRes.ok ? await condolencesRes.json() : { data: [] };
     const tributesData = tributesRes.ok ? await tributesRes.json() : { data: [] };
+
+    if (!memorial) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-memorial-50">
+          <div className="text-center">
+            <p className="text-4xl mb-4">🕊️</p>
+            <h1 className="text-xl font-semibold text-memorial-700">Memorial Not Found</h1>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <MemorialPage
