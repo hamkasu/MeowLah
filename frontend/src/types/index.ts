@@ -1,5 +1,5 @@
 // ============================================================
-// Core type definitions for Catstagram + CatFinder Malaysia
+// Core type definitions for MeowLah — Catstagram + CatFinder Malaysia
 // ============================================================
 
 export interface User {
@@ -11,14 +11,17 @@ export interface User {
   bio: string | null;
   is_verified_rescuer: boolean;
   is_premium: boolean;
+  location_city?: string | null;
   follower_count?: number;
   following_count?: number;
+  post_count?: number;
+  cats_owned?: CatProfile[];
   created_at: string;
 }
 
 export interface CatProfile {
   id: string;
-  owner_id: string;
+  owner_id?: string;
   name: string;
   breed: string | null;
   color: string | null;
@@ -140,7 +143,7 @@ export interface Condolence {
 
 export interface Notification {
   id: string;
-  type: 'like' | 'comment' | 'follow' | 'lost_cat_nearby' | 'match_found' | 'condolence';
+  type: 'like' | 'comment' | 'follow' | 'lost_cat_nearby' | 'match_found' | 'condolence' | 'sighting';
   title: string;
   body: string;
   data: Record<string, unknown>;
@@ -161,6 +164,21 @@ export interface PaginatedResponse<T> {
 export interface AIMatchResult {
   found_cat_id: string;
   found_cat: FoundCat;
-  similarity_score: number; // 0-1
+  similarity_score: number;
   matched_features: string[];
+}
+
+export interface PaymentHistory {
+  id: string;
+  target_type: string;
+  target_id: string;
+  amount: number;
+  currency: string;
+  payment_status: string;
+  created_at: string;
+}
+
+export interface UserProfile extends User {
+  notification_radius_km?: number;
+  is_following?: boolean;
 }

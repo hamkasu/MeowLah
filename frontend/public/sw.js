@@ -1,9 +1,9 @@
 // ============================================================
-// MeowLah Service Worker
+// MeowLah Service Worker v2
 // Handles: caching, offline fallback, background sync, push
 // ============================================================
 
-const CACHE_VERSION = 'meowlah-v1';
+const CACHE_VERSION = 'meowlah-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const MEMORIAL_CACHE = `${CACHE_VERSION}-memorials`;
@@ -13,11 +13,21 @@ const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 const PRECACHE_ASSETS = [
   '/',
   '/feed',
+  '/explore',
+  '/lost-cats',
+  '/memorial-wall',
+  '/auth/login',
+  '/auth/register',
   '/offline',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
+
+// Max cache sizes
+const MAX_DYNAMIC_CACHE = 100;
+const MAX_IMAGE_CACHE = 200;
+const MAX_MEMORIAL_CACHE = 50;
 
 // ---- INSTALL ----
 self.addEventListener('install', (event) => {
@@ -26,7 +36,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  // Activate immediately without waiting for old SW to finish
   self.skipWaiting();
 });
 
@@ -36,12 +45,11 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => key.startsWith('meowlah-') && key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== MEMORIAL_CACHE && key !== IMAGE_CACHE)
+          .filter((key) => key.startsWith('meowlah-') && !key.startsWith(CACHE_VERSION))
           .map((key) => caches.delete(key))
       );
     })
   );
-  // Take control of all clients immediately
   self.clients.claim();
 });
 
@@ -53,38 +61,46 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests (POST/PUT handled by background sync)
   if (request.method !== 'GET') return;
 
+  // Skip chrome-extension and non-http(s) requests
+  if (!url.protocol.startsWith('http')) return;
+
   // Strategy 1: Memorial pages — Network first, fall back to cache
-  // Memorial pages are emotionally important — pre-cache for reliability
   if (url.pathname.startsWith('/memorial/')) {
-    event.respondWith(networkFirstWithCache(request, MEMORIAL_CACHE));
+    event.respondWith(networkFirstWithCache(request, MEMORIAL_CACHE, MAX_MEMORIAL_CACHE));
     return;
   }
 
   // Strategy 2: API requests — Network first, fall back to cache
-  if (url.pathname.startsWith('/v1/') || url.hostname !== self.location.hostname) {
-    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+  if (url.pathname.startsWith('/v1/') || (url.hostname !== self.location.hostname && !url.pathname.match(/\.(png|jpg|jpeg|webp|avif|gif|svg)$/))) {
+    event.respondWith(networkFirst(request, DYNAMIC_CACHE, MAX_DYNAMIC_CACHE));
     return;
   }
 
-  // Strategy 3: Images — Cache first, fall back to network (stale-while-revalidate)
+  // Strategy 3: Images — Cache first with stale-while-revalidate
   if (request.destination === 'image' || url.pathname.match(/\.(png|jpg|jpeg|webp|avif|gif|svg)$/)) {
-    event.respondWith(staleWhileRevalidate(request, IMAGE_CACHE));
+    event.respondWith(staleWhileRevalidate(request, IMAGE_CACHE, MAX_IMAGE_CACHE));
     return;
   }
 
-  // Strategy 4: Static assets — Stale while revalidate
+  // Strategy 4: Auth pages — Cache first for instant load
+  if (url.pathname.startsWith('/auth/')) {
+    event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+    return;
+  }
+
+  // Strategy 5: Static assets — Stale while revalidate
   event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
 });
 
 // ---- CACHING STRATEGIES ----
 
-// Network first: try network, fall back to cache, then offline page
-async function networkFirst(request, cacheName) {
+async function networkFirst(request, cacheName, maxEntries) {
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
+      if (maxEntries) trimCache(cacheName, maxEntries);
     }
     return networkResponse;
   } catch {
@@ -93,26 +109,23 @@ async function networkFirst(request, cacheName) {
   }
 }
 
-// Network first with memorial-specific caching
-// Also caches memorial gallery images for emotional reliability
-async function networkFirstWithCache(request, cacheName) {
+async function networkFirstWithCache(request, cacheName, maxEntries) {
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
+      if (maxEntries) trimCache(cacheName, maxEntries);
     }
     return networkResponse;
   } catch {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) return cachedResponse;
-    // Memorial-specific offline fallback
     return caches.match('/offline');
   }
 }
 
-// Stale while revalidate: return cache immediately, update in background
-async function staleWhileRevalidate(request, cacheName) {
+async function staleWhileRevalidate(request, cacheName, maxEntries) {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
 
@@ -120,6 +133,7 @@ async function staleWhileRevalidate(request, cacheName) {
     .then((networkResponse) => {
       if (networkResponse.ok) {
         cache.put(request, networkResponse.clone());
+        if (maxEntries) trimCache(cacheName, maxEntries);
       }
       return networkResponse;
     })
@@ -128,16 +142,30 @@ async function staleWhileRevalidate(request, cacheName) {
   return cachedResponse || fetchPromise;
 }
 
+// Trim cache to max entries (LRU eviction)
+async function trimCache(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxEntries) {
+    await cache.delete(keys[0]);
+    trimCache(cacheName, maxEntries);
+  }
+}
+
 // ---- BACKGROUND SYNC ----
-// Replays queued requests when connectivity returns
 self.addEventListener('sync', (event) => {
   if (event.tag === 'meowlah-sync') {
+    event.waitUntil(replayQueuedRequests());
+  }
+  if (event.tag === 'meowlah-post-sync') {
+    event.waitUntil(replayQueuedRequests());
+  }
+  if (event.tag === 'meowlah-lost-cat-sync') {
     event.waitUntil(replayQueuedRequests());
   }
 });
 
 async function replayQueuedRequests() {
-  // Open IndexedDB to read queued requests
   const db = await openIndexedDB();
   const tx = db.transaction('sync-queue', 'readwrite');
   const store = tx.objectStore('sync-queue');
@@ -152,11 +180,9 @@ async function replayQueuedRequests() {
       });
 
       if (response.ok) {
-        // Remove from queue on success
         const deleteTx = db.transaction('sync-queue', 'readwrite');
         deleteTx.objectStore('sync-queue').delete(entry.id);
 
-        // Notify the client that sync succeeded
         const clients = await self.clients.matchAll();
         clients.forEach((client) => {
           client.postMessage({
@@ -167,7 +193,6 @@ async function replayQueuedRequests() {
         });
       }
     } catch {
-      // Will retry on next sync event
       console.log(`[SW] Sync failed for ${entry.id}, will retry`);
     }
   }
@@ -177,14 +202,19 @@ async function replayQueuedRequests() {
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
-  const payload = event.data.json();
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: 'MeowLah', body: event.data.text() };
+  }
 
   const options = {
     body: payload.body || 'You have a new notification',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     vibrate: [100, 50, 100],
-    tag: payload.tag || 'meowlah-notification',
+    tag: payload.tag || `meowlah-${payload.type || 'notification'}`,
     renotify: true,
     data: {
       url: payload.url || '/feed',
@@ -199,15 +229,28 @@ self.addEventListener('push', (event) => {
       { action: 'view', title: 'View Report' },
       { action: 'sighting', title: 'I Saw This Cat' },
     ];
-    options.requireInteraction = true; // Keep visible — urgent
+    options.requireInteraction = true;
   } else if (payload.type === 'match_found') {
     options.actions = [
       { action: 'view', title: 'View Match' },
     ];
     options.requireInteraction = true;
-  } else if (payload.type === 'condolence') {
+  } else if (payload.type === 'condolence' || payload.type === 'tribute') {
     options.actions = [
       { action: 'view', title: 'Read Message' },
+    ];
+  } else if (payload.type === 'sighting') {
+    options.actions = [
+      { action: 'view', title: 'View Sighting' },
+    ];
+    options.requireInteraction = true;
+  } else if (payload.type === 'like' || payload.type === 'comment') {
+    options.actions = [
+      { action: 'view', title: 'View Post' },
+    ];
+  } else if (payload.type === 'follow') {
+    options.actions = [
+      { action: 'view', title: 'View Profile' },
     ];
   }
 
@@ -223,11 +266,42 @@ self.addEventListener('notificationclick', (event) => {
   const url = event.notification.data?.url || '/feed';
 
   if (event.action === 'sighting') {
-    // Open the sighting report form for this lost cat
-    const sightingUrl = url.replace('/lost-cats/', '/lost-cats/') + '?report-sighting=true';
+    const sightingUrl = url + '?report-sighting=true';
     event.waitUntil(self.clients.openWindow(sightingUrl));
   } else {
-    event.waitUntil(self.clients.openWindow(url));
+    // Focus existing window or open new one
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+        for (const client of windowClients) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.navigate(url);
+            return client.focus();
+          }
+        }
+        return self.clients.openWindow(url);
+      })
+    );
+  }
+});
+
+// Handle notification close (analytics)
+self.addEventListener('notificationclose', (event) => {
+  // Could send analytics event here
+});
+
+// ---- MESSAGE HANDLER ----
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  if (event.data?.type === 'CACHE_MEMORIAL') {
+    // Pre-cache a memorial page when user views it
+    const { slug } = event.data;
+    if (slug) {
+      caches.open(MEMORIAL_CACHE).then((cache) => {
+        cache.add(`/memorial/${slug}`);
+      });
+    }
   }
 });
 
