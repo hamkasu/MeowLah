@@ -10,9 +10,9 @@ export function BottomNav() {
   const { user, isAuthenticated } = useAuthStore();
 
   // Hide nav on auth pages
-  if (pathname?.startsWith('/auth/')) return null;
+  if (pathname === '/login' || pathname === '/register') return null;
 
-  const profileHref = isAuthenticated && user ? `/profile/${user.username}` : '/auth/login';
+  const profileHref = isAuthenticated && user ? `/profile/${user.username}` : '/login';
 
   const NAV_ITEMS = [
     { href: '/feed', label: 'Feed', icon: HomeIcon },

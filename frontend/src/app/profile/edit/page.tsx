@@ -14,7 +14,7 @@ export default function EditProfilePage() {
     if (isLoading) return;
 
     if (!isAuthenticated || !user) {
-      router.replace('/auth/login');
+      router.replace('/login');
     }
   }, [isAuthenticated, isLoading, user, router]);
 

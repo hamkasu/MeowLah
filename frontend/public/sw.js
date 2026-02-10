@@ -16,8 +16,8 @@ const PRECACHE_ASSETS = [
   '/explore',
   '/lost-cats',
   '/memorial-wall',
-  '/auth/login',
-  '/auth/register',
+  '/login',
+  '/register',
   '/offline',
   '/manifest.json',
   '/icons/icon-192x192.png',
@@ -83,7 +83,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Strategy 4: Auth pages — Cache first for instant load
-  if (url.pathname.startsWith('/auth/')) {
+  if (url.pathname === '/login' || url.pathname === '/register') {
     event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
     return;
   }
