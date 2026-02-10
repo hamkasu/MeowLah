@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                  String    @id @default(uuid()) @db.Uuid
   email               String    @unique @db.VarChar(255)
   username            String    @unique @db.VarChar(50)
   passwordHash        String    @map("password_hash") @db.VarChar(255)
@@ -46,7 +46,7 @@ model User {
 }
 
 model CatProfile {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   ownerId     String   @map("owner_id") @db.Uuid
   name        String   @db.VarChar(100)
   breed       String?  @db.VarChar(100)
@@ -70,7 +70,7 @@ model CatProfile {
 }
 
 model Post {
-  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id            String    @id @default(uuid()) @db.Uuid
   authorId      String    @map("author_id") @db.Uuid
   catProfileId  String?   @map("cat_profile_id") @db.Uuid
   caption       String?
@@ -110,7 +110,7 @@ model PostLike {
 }
 
 model Comment {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   authorId   String   @map("author_id") @db.Uuid
   postId     String?  @map("post_id") @db.Uuid
   memorialId String?  @map("memorial_id") @db.Uuid
@@ -143,7 +143,7 @@ model Follow {
 }
 
 model LostCat {
-  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
   reporterId       String    @map("reporter_id") @db.Uuid
   catProfileId     String?   @map("cat_profile_id") @db.Uuid
   name             String    @db.VarChar(100)
@@ -176,7 +176,7 @@ model LostCat {
 }
 
 model FoundCat {
-  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String    @id @default(uuid()) @db.Uuid
   reporterId      String    @map("reporter_id") @db.Uuid
   description     String
   photoUrls       String[]  @map("photo_urls")
@@ -200,7 +200,7 @@ model FoundCat {
 }
 
 model CatSighting {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   lostCatId String   @map("lost_cat_id") @db.Uuid
   reporterId String  @map("reporter_id") @db.Uuid
   lat       Float
@@ -218,7 +218,7 @@ model CatSighting {
 }
 
 model Memorial {
-  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id             String    @id @default(uuid()) @db.Uuid
   slug           String    @unique @db.VarChar(200)
   creatorId      String    @map("creator_id") @db.Uuid
   catProfileId   String?   @map("cat_profile_id") @db.Uuid
@@ -252,7 +252,7 @@ model Memorial {
 }
 
 model MemorialTribute {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   memorialId  String   @map("memorial_id") @db.Uuid
   userId      String   @map("user_id") @db.Uuid
   tributeType String   @map("tribute_type") @db.VarChar(20)
@@ -267,7 +267,7 @@ model MemorialTribute {
 }
 
 model Condolence {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   memorialId String   @map("memorial_id") @db.Uuid
   authorId   String   @map("author_id") @db.Uuid
   message    String
@@ -281,7 +281,7 @@ model Condolence {
 }
 
 model PaidBoost {
-  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
   userId           String    @map("user_id") @db.Uuid
   targetType       String    @map("target_type") @db.VarChar(20)
   targetId         String    @map("target_id") @db.Uuid
@@ -303,7 +303,7 @@ model PaidBoost {
 }
 
 model Subscription {
-  id               String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id               String   @id @default(uuid()) @db.Uuid
   userId           String   @map("user_id") @db.Uuid
   plan             String   @db.VarChar(50)
   status           String   @default("active") @db.VarChar(20)
@@ -325,7 +325,7 @@ model Subscription {
 }
 
 model Notification {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   type      String   @db.VarChar(50)
   title     String?  @db.VarChar(200)
@@ -342,7 +342,7 @@ model Notification {
 }
 
 model SponsoredListing {
-  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String    @id @default(uuid()) @db.Uuid
   advertiserName  String    @map("advertiser_name") @db.VarChar(200)
   title           String    @db.VarChar(200)
   description     String?
