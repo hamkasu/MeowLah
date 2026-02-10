@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { CatFeedCard } from '@/components/feed/CatFeedCard';
 import { useFeedStore } from '@/store/feed-store';
+import { useAuthStore } from '@/store/auth-store';
 
 export default function FeedPage() {
   const { posts, isLoading, hasMore, fetchFeed } = useFeedStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     fetchFeed(true);
@@ -22,12 +25,40 @@ export default function FeedPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary-600">MeowLah</h1>
-        <div className="flex items-center gap-3">
-          <a href="/lost-cats/new" className="text-xs bg-alert-urgent text-white px-3 py-1.5 rounded-full font-medium">
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <Link
+              href="/feed/create"
+              className="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center text-lg font-bold hover:bg-primary-600 transition"
+            >
+              +
+            </Link>
+          )}
+          <Link href="/lost-cats/new" className="text-xs bg-alert-urgent text-white px-3 py-1.5 rounded-full font-medium">
             Report Lost Cat
-          </a>
+          </Link>
+          {isAuthenticated && user && (
+            <Link href={`/profile/${user.username}`} className="ml-1">
+              <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-xs text-gray-500 font-semibold">
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  user.username[0].toUpperCase()
+                )}
+              </div>
+            </Link>
+          )}
         </div>
       </header>
+
+      {/* Auth banner */}
+      {!isAuthenticated && (
+        <div className="bg-primary-50 border-b border-primary-100 px-4 py-3 text-center">
+          <p className="text-sm text-primary-800">
+            <Link href="/auth/login" className="font-semibold underline">Sign in</Link> to post photos and follow cat lovers
+          </p>
+        </div>
+      )}
 
       {/* Feed */}
       <div>

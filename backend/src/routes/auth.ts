@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { prisma } from '../config/database';
 import { env } from '../config/env';
 import { AppError } from '../middleware/error-handler';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 export const authRouter = Router();
 
@@ -30,15 +31,29 @@ function generateTokens(userId: string) {
   return { token, refreshToken };
 }
 
-function sanitizeUser(user: { id: string; email: string; username: string; displayName: string | null; avatarUrl: string | null; isPremium: boolean; isVerifiedRescuer: boolean }) {
+function sanitizeUser(user: {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  isPremium: boolean;
+  isVerifiedRescuer: boolean;
+  locationCity: string | null;
+  createdAt: Date;
+}) {
   return {
     id: user.id,
     email: user.email,
     username: user.username,
     display_name: user.displayName,
     avatar_url: user.avatarUrl,
+    bio: user.bio,
     is_premium: user.isPremium,
     is_verified_rescuer: user.isVerifiedRescuer,
+    location_city: user.locationCity,
+    created_at: user.createdAt,
   };
 }
 
@@ -47,7 +62,6 @@ authRouter.post('/register', async (req: Request, res: Response, next: NextFunct
   try {
     const body = registerSchema.parse(req.body);
 
-    // Check for existing user
     const existing = await prisma.user.findFirst({
       where: {
         OR: [{ email: body.email }, { username: body.username }],
@@ -110,6 +124,19 @@ authRouter.post('/login', async (req: Request, res: Response, next: NextFunction
   }
 });
 
+// POST /v1/auth/logout
+authRouter.post('/logout', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.userId! },
+      data: { pushSubscription: null },
+    });
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /v1/auth/refresh
 authRouter.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -130,6 +157,40 @@ authRouter.post('/refresh', async (req: Request, res: Response, next: NextFuncti
     res.json({
       token: tokens.token,
       refresh_token: tokens.refreshToken,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /v1/auth/me
+authRouter.get('/me', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: {
+        id: true, email: true, username: true, displayName: true,
+        avatarUrl: true, bio: true, isPremium: true, isVerifiedRescuer: true,
+        locationCity: true, createdAt: true,
+        _count: { select: { followers: true, following: true, posts: true } },
+      },
+    });
+    if (!user) throw new AppError('User not found', 404);
+
+    res.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      display_name: user.displayName,
+      avatar_url: user.avatarUrl,
+      bio: user.bio,
+      is_premium: user.isPremium,
+      is_verified_rescuer: user.isVerifiedRescuer,
+      location_city: user.locationCity,
+      created_at: user.createdAt,
+      follower_count: user._count.followers,
+      following_count: user._count.following,
+      post_count: user._count.posts,
     });
   } catch (err) {
     next(err);

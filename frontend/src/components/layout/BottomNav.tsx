@@ -3,26 +3,33 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-
-const NAV_ITEMS = [
-  { href: '/feed', label: 'Feed', icon: HomeIcon },
-  { href: '/explore', label: 'Explore', icon: SearchIcon },
-  { href: '/lost-cats', label: 'CatFinder', icon: MapPinIcon },
-  { href: '/memorial-wall', label: 'Memorial', icon: HeartIcon },
-  { href: '/profile', label: 'Profile', icon: UserIcon },
-] as const;
+import { useAuthStore } from '@/store/auth-store';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user, isAuthenticated } = useAuthStore();
+
+  // Hide nav on auth pages
+  if (pathname?.startsWith('/auth/')) return null;
+
+  const profileHref = isAuthenticated && user ? `/profile/${user.username}` : '/auth/login';
+
+  const NAV_ITEMS = [
+    { href: '/feed', label: 'Feed', icon: HomeIcon },
+    { href: '/explore', label: 'Explore', icon: SearchIcon },
+    { href: '/lost-cats', label: 'CatFinder', icon: MapPinIcon },
+    { href: '/memorial-wall', label: 'Memorial', icon: HeartIcon },
+    { href: profileHref, label: 'Profile', icon: UserIcon, matchPath: '/profile' },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname?.startsWith(href);
+        {NAV_ITEMS.map(({ href, label, icon: Icon, matchPath }) => {
+          const isActive = pathname?.startsWith(matchPath || href);
           return (
             <Link
-              key={href}
+              key={label}
               href={href}
               className={clsx(
                 'flex flex-col items-center justify-center gap-0.5 px-3 py-1 text-xs transition-colors',

@@ -13,6 +13,7 @@ import { foundCatsRouter } from './routes/found-cats';
 import { memorialsRouter } from './routes/memorials';
 import { notificationsRouter } from './routes/notifications';
 import { boostsRouter } from './routes/boosts';
+import { paymentsRouter } from './routes/payments';
 import { errorHandler } from './middleware/error-handler';
 
 const app = express();
@@ -61,6 +62,7 @@ app.use('/v1/found-cats', foundCatsRouter);
 app.use('/v1/memorials', memorialsRouter);
 app.use('/v1/notifications', notificationsRouter);
 app.use('/v1/boosts', boostsRouter);
+app.use('/v1/payments', paymentsRouter);
 
 // Global error handler
 app.use(errorHandler);

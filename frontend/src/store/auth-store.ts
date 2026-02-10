@@ -13,11 +13,12 @@ interface AuthState {
 
   login: (email: string, password: string) => Promise<void>;
   register: (data: { email: string; username: string; password: string; display_name: string }) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: true,
   isAuthenticated: false,
@@ -36,7 +37,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: data.user, isAuthenticated: true });
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Continue logout even if API call fails
+    }
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     set({ user: null, isAuthenticated: false });
@@ -53,6 +59,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: data, isAuthenticated: true, isLoading: false });
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  updateUser: (updates) => {
+    const current = get().user;
+    if (current) {
+      set({ user: { ...current, ...updates } });
     }
   },
 }));

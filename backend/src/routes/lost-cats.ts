@@ -2,7 +2,7 @@ import { Router, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { requireAuth, optionalAuth, AuthRequest } from '../middleware/auth';
 import { upload } from '../middleware/upload';
-import { uploadFile } from '../config/s3';
+import { uploadFile, deleteFile } from '../config/s3';
 import { notifyNearbyUsers } from '../services/push-notification';
 import { AppError } from '../middleware/error-handler';
 
@@ -21,7 +21,6 @@ lostCatsRouter.post(
         return;
       }
 
-      // Upload photos to S3
       const photoUrls = await Promise.all(
         files.map((file) =>
           uploadFile(file.buffer, file.originalname, 'lost-cats', file.mimetype)
@@ -47,7 +46,6 @@ lostCatsRouter.post(
         },
       });
 
-      // Send push notifications to nearby users (async, don't block response)
       const notificationCount = await notifyNearbyUsers(
         lostCat.id,
         lostCat.lastSeenLat,
@@ -82,7 +80,7 @@ lostCatsRouter.get('/', optionalAuth, async (req: AuthRequest, res: Response, ne
       prisma.lostCat.findMany({
         where: { status },
         orderBy: [
-          { isBoosted: 'desc' },  // Boosted reports appear first
+          { isBoosted: 'desc' },
           { createdAt: 'desc' },
         ],
         skip,
@@ -137,7 +135,6 @@ lostCatsRouter.get('/nearby', async (req: AuthRequest, res: Response, next: Next
       return;
     }
 
-    // PostGIS spatial query
     const nearbyCats = await prisma.$queryRaw`
       SELECT lc.*,
         ST_Distance(
@@ -183,7 +180,90 @@ lostCatsRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFun
 
     if (!lostCat) throw new AppError('Lost cat report not found', 404);
 
-    res.json(lostCat);
+    res.json({
+      id: lostCat.id,
+      reporter: lostCat.reporter,
+      name: lostCat.name,
+      breed: lostCat.breed,
+      color: lostCat.color,
+      description: lostCat.description,
+      photo_urls: lostCat.photoUrls,
+      last_seen_lat: lostCat.lastSeenLat,
+      last_seen_lng: lostCat.lastSeenLng,
+      last_seen_address: lostCat.lastSeenAddress,
+      last_seen_at: lostCat.lastSeenAt,
+      contact_phone: lostCat.contactPhone,
+      contact_whatsapp: lostCat.contactWhatsapp,
+      reward_amount: lostCat.rewardAmount,
+      status: lostCat.status,
+      is_boosted: lostCat.isBoosted,
+      sightings: lostCat.sightings,
+      created_at: lostCat.createdAt,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /v1/lost-cats/:id — Edit own lost cat report
+lostCatsRouter.put('/:id', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const lostCat = await prisma.lostCat.findUnique({ where: { id: req.params.id } });
+    if (!lostCat) throw new AppError('Lost cat report not found', 404);
+    if (lostCat.reporterId !== req.userId) throw new AppError('Not authorized', 403);
+
+    const updated = await prisma.lostCat.update({
+      where: { id: req.params.id },
+      data: {
+        ...(req.body.name && { name: req.body.name }),
+        ...(req.body.breed !== undefined && { breed: req.body.breed }),
+        ...(req.body.color !== undefined && { color: req.body.color }),
+        ...(req.body.description && { description: req.body.description }),
+        ...(req.body.contact_phone !== undefined && { contactPhone: req.body.contact_phone }),
+        ...(req.body.contact_whatsapp !== undefined && { contactWhatsapp: req.body.contact_whatsapp }),
+        ...(req.body.reward_amount !== undefined && { rewardAmount: req.body.reward_amount ? parseFloat(req.body.reward_amount) : null }),
+        ...(req.body.last_seen_address && { lastSeenAddress: req.body.last_seen_address }),
+      },
+    });
+
+    res.json({ id: updated.id, name: updated.name, status: updated.status });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /v1/lost-cats/:id — Delete own lost cat report
+lostCatsRouter.delete('/:id', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const lostCat = await prisma.lostCat.findUnique({
+      where: { id: req.params.id },
+      select: { reporterId: true, photoUrls: true },
+    });
+    if (!lostCat) throw new AppError('Lost cat report not found', 404);
+    if (lostCat.reporterId !== req.userId) throw new AppError('Not authorized', 403);
+
+    await Promise.allSettled(lostCat.photoUrls.map((url) => deleteFile(url)));
+    await prisma.lostCat.delete({ where: { id: req.params.id } });
+
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /v1/lost-cats/:id/status
+lostCatsRouter.put('/:id/status', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const lostCat = await prisma.lostCat.findUnique({ where: { id: req.params.id } });
+    if (!lostCat) throw new AppError('Lost cat report not found', 404);
+    if (lostCat.reporterId !== req.userId) throw new AppError('Not authorized', 403);
+
+    const updated = await prisma.lostCat.update({
+      where: { id: req.params.id },
+      data: { status: req.body.status },
+    });
+
+    res.json({ id: updated.id, status: updated.status });
   } catch (err) {
     next(err);
   }
@@ -218,7 +298,7 @@ lostCatsRouter.post(
         },
       });
 
-      // Notify the lost cat reporter about the sighting
+      // Notify the lost cat reporter
       const lostCat = await prisma.lostCat.findUnique({
         where: { id: req.params.id },
         select: { reporterId: true, name: true },
@@ -240,21 +320,3 @@ lostCatsRouter.post(
     }
   }
 );
-
-// PUT /v1/lost-cats/:id/status
-lostCatsRouter.put('/:id/status', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const lostCat = await prisma.lostCat.findUnique({ where: { id: req.params.id } });
-    if (!lostCat) throw new AppError('Lost cat report not found', 404);
-    if (lostCat.reporterId !== req.userId) throw new AppError('Not authorized', 403);
-
-    const updated = await prisma.lostCat.update({
-      where: { id: req.params.id },
-      data: { status: req.body.status },
-    });
-
-    res.json({ id: updated.id, status: updated.status });
-  } catch (err) {
-    next(err);
-  }
-});
