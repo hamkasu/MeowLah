@@ -4,7 +4,10 @@
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
+// When NEXT_PUBLIC_API_URL is set (e.g. for direct backend access), use it.
+// Otherwise default to '/v1' which the Next.js rewrite proxy forwards to the
+// backend, avoiding CORS and the need for a build-time URL.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/v1';
 
 export const api = axios.create({
   baseURL: API_URL,

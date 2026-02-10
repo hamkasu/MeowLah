@@ -24,7 +24,25 @@ app.set('trust proxy', 1);
 // Security
 app.use(helmet());
 app.use(cors({
-  origin: [env.FRONTEND_URL, 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, mobile apps)
+    if (!origin) return callback(null, true);
+
+    const allowed = [
+      env.FRONTEND_URL,
+      'http://localhost:3000',
+    ];
+
+    if (
+      allowed.includes(origin) ||
+      // Allow any Railway-deployed frontend
+      origin.endsWith('.up.railway.app')
+    ) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 
