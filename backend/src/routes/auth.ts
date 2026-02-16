@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
 import { env } from '../config/env';
 import { AppError } from '../middleware/error-handler';
@@ -129,7 +130,7 @@ authRouter.post('/logout', requireAuth, async (req: AuthRequest, res: Response, 
   try {
     await prisma.user.update({
       where: { id: req.userId! },
-      data: { pushSubscription: null },
+      data: { pushSubscription: Prisma.DbNull },
     });
     res.json({ success: true, message: 'Logged out successfully' });
   } catch (err) {
