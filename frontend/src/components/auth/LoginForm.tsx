@@ -59,7 +59,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Email */}
       <div>
-        <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-1">
           Email
         </label>
         <input
@@ -69,13 +69,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-dark-border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30"
         />
       </div>
 
       {/* Password */}
       <div>
-        <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="login-password" className="block text-sm font-medium text-white/70 mb-1">
           Password
         </label>
         <input
@@ -85,7 +85,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter your password"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-dark-border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30"
         />
       </div>
 
@@ -93,7 +93,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 active:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 bg-accent-pink text-white font-semibold rounded-lg hover:bg-accent-pink/90 active:bg-accent-pink/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
@@ -118,9 +118,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       </button>
 
       {/* Register link */}
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-white/40">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-primary-600 font-medium hover:underline">
+        <Link href="/register" className="text-accent-cyan font-medium hover:underline">
           Create one
         </Link>
       </p>

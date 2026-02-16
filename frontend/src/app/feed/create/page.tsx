@@ -20,7 +20,7 @@ export default function CreatePostPage() {
   if (isLoading) {
     return (
       <div className="max-w-lg mx-auto py-20 text-center">
-        <div className="animate-pulse text-gray-400">Loading...</div>
+        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
       </div>
     );
   }
@@ -30,15 +30,15 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto pb-24">
+    <div className="max-w-lg mx-auto pb-24 bg-black min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-        <Link href="/feed" className="text-gray-600 hover:text-gray-900 transition">
+      <header className="sticky top-0 z-40 bg-dark-card/95 backdrop-blur-md border-b border-dark-border px-4 py-3 flex items-center justify-between">
+        <Link href="/feed" className="text-white/70 hover:text-white transition">
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
         </Link>
-        <h1 className="text-lg font-semibold text-gray-900">New Post</h1>
+        <h1 className="text-lg font-semibold text-white">New Post</h1>
         <div className="w-6" />
       </header>
 

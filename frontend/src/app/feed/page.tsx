@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { CatFeedCard } from '@/components/feed/CatFeedCard';
 import { useFeedStore } from '@/store/feed-store';
@@ -8,85 +8,138 @@ import { useAuthStore } from '@/store/auth-store';
 
 export default function FeedPage() {
   const { posts, isLoading, hasMore, fetchFeed } = useFeedStore();
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const feedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchFeed(true);
   }, [fetchFeed]);
 
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
+  // Intersection Observer to track which card is in view
+  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const idx = Number(entry.target.getAttribute('data-index'));
+        if (!isNaN(idx)) setActiveIndex(idx);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      threshold: 0.6,
+    });
+
+    const cards = feedRef.current?.querySelectorAll('[data-index]');
+    cards?.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [posts, observerCallback]);
+
+  // Load more when reaching near the end
+  useEffect(() => {
+    if (activeIndex >= posts.length - 2 && hasMore && !isLoading) {
       fetchFeed();
     }
-  };
+  }, [activeIndex, posts.length, hasMore, isLoading, fetchFeed]);
 
   return (
-    <div className="max-w-lg mx-auto">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-primary-600">MeowLah</h1>
-        <div className="flex items-center gap-2">
-          {isAuthenticated && (
+    <div className="relative h-[100dvh] bg-black">
+      {/* Top header overlay - TikTok style */}
+      <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+        <div className="flex items-center justify-center pt-3 pb-2 px-4">
+          {/* Left: Live indicator (decorative) */}
+          <div className="absolute left-4 pointer-events-auto">
             <Link
-              href="/feed/create"
-              className="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center text-lg font-bold hover:bg-primary-600 transition"
+              href="/lost-cats"
+              className="flex items-center gap-1 bg-accent-pink/90 text-white text-xs font-bold px-2.5 py-1 rounded-md backdrop-blur-sm"
             >
-              +
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742z" clipRule="evenodd" />
+              </svg>
+              SOS
             </Link>
-          )}
-          <Link href="/lost-cats/new" className="text-xs bg-alert-urgent text-white px-3 py-1.5 rounded-full font-medium">
-            Report Lost Cat
-          </Link>
-          {isAuthenticated && user && (
-            <Link href={`/profile/${user.username}`} className="ml-1">
-              <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-xs text-gray-500 font-semibold">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  user.username[0].toUpperCase()
-                )}
-              </div>
+          </div>
+
+          {/* Center: Tab switcher */}
+          <div className="flex items-center gap-4 pointer-events-auto">
+            <button
+              onClick={() => setActiveTab('following')}
+              className={`tiktok-tab ${activeTab === 'following' ? 'tiktok-tab-active' : 'tiktok-tab-inactive'}`}
+            >
+              Following
+            </button>
+            <div className="w-px h-4 bg-white/30" />
+            <button
+              onClick={() => setActiveTab('foryou')}
+              className={`tiktok-tab ${activeTab === 'foryou' ? 'tiktok-tab-active' : 'tiktok-tab-inactive'}`}
+            >
+              For You
+            </button>
+          </div>
+
+          {/* Right: Search */}
+          <div className="absolute right-4 pointer-events-auto">
+            <Link href="/explore" className="text-white">
+              <svg className="w-6 h-6 drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
             </Link>
-          )}
+          </div>
+        </div>
+
+        {/* Active tab indicator */}
+        <div className="flex justify-center">
+          <div className="flex items-center gap-4 relative">
+            <div className="w-16" />
+            <div className="w-px h-0" />
+            <div className="w-14" />
+            <div
+              className="absolute bottom-0 h-0.5 w-8 bg-white rounded-full transition-all duration-300"
+              style={{
+                left: activeTab === 'following' ? '12px' : 'calc(100% - 44px)',
+              }}
+            />
+          </div>
         </div>
       </header>
 
-      {/* Auth banner */}
+      {/* Auth banner overlay */}
       {!isAuthenticated && (
-        <div className="bg-primary-50 border-b border-primary-100 px-4 py-3 text-center">
-          <p className="text-sm text-primary-800">
-            <Link href="/login" className="font-semibold underline">Sign in</Link> to post photos and follow cat lovers
-          </p>
+        <div className="fixed top-14 left-0 right-0 z-40 pointer-events-auto">
+          <div className="mx-4 bg-white/10 backdrop-blur-md rounded-xl px-4 py-2.5 text-center">
+            <p className="text-sm text-white">
+              <Link href="/login" className="font-semibold text-accent-cyan underline">Sign in</Link>
+              {' '}to post and follow cat lovers
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Feed */}
-      <div>
-        {posts.map((post) => (
-          <CatFeedCard key={post.id} post={post} />
+      {/* TikTok-style full-screen feed */}
+      <div ref={feedRef} className="tiktok-feed">
+        {posts.map((post, index) => (
+          <div key={post.id} data-index={index}>
+            <CatFeedCard post={post} isActive={index === activeIndex} />
+          </div>
         ))}
 
         {isLoading && (
-          <div className="py-8 text-center">
-            <div className="animate-pulse text-gray-400">Loading...</div>
-          </div>
-        )}
-
-        {hasMore && !isLoading && posts.length > 0 && (
-          <div className="py-6 text-center">
-            <button
-              onClick={handleLoadMore}
-              className="px-6 py-2 text-sm text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50 transition"
-            >
-              Load More
-            </button>
+          <div className="h-[100dvh] flex items-center justify-center snap-start">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="text-white/50 text-sm">Loading...</span>
+            </div>
           </div>
         )}
 
         {!isLoading && posts.length === 0 && (
-          <div className="py-20 text-center text-gray-400">
-            <p className="text-4xl mb-4">🐱</p>
-            <p>No posts yet. Follow some cat lovers to see their posts!</p>
+          <div className="h-[100dvh] flex flex-col items-center justify-center snap-start text-white/40">
+            <span className="text-6xl mb-4">🐱</span>
+            <p className="text-lg font-medium">No posts yet</p>
+            <p className="text-sm mt-1">Follow cat lovers to see their posts!</p>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,170 +10,216 @@ import { useFeedStore } from '@/store/feed-store';
 
 interface CatFeedCardProps {
   post: Post;
+  isActive?: boolean;
 }
 
-export function CatFeedCard({ post }: CatFeedCardProps) {
+export function CatFeedCard({ post, isActive = false }: CatFeedCardProps) {
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showLikeAnim, setShowLikeAnim] = useState(false);
   const { likePost, unlikePost } = useFeedStore();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Auto-play/pause video based on visibility
+  useEffect(() => {
+    if (post.media_type === 'video' && videoRef.current) {
+      if (isActive) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isActive, post.media_type]);
 
   const handleLikeToggle = () => {
     if (post.is_liked) {
       unlikePost(post.id);
     } else {
       likePost(post.id);
+      setShowLikeAnim(true);
+      setTimeout(() => setShowLikeAnim(false), 600);
+    }
+  };
+
+  const handleDoubleTap = () => {
+    if (!post.is_liked) {
+      likePost(post.id);
+      setShowLikeAnim(true);
+      setTimeout(() => setShowLikeAnim(false), 600);
     }
   };
 
   const hasMultipleImages = post.media_urls.length > 1;
 
-  return (
-    <article className="bg-white border-b border-gray-100">
-      {/* Author Header */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        <Link href={`/profile/${post.author.username}`}>
-          <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden">
-            {post.author.avatar_url ? (
-              <Image
-                src={post.author.avatar_url}
-                alt={post.author.username}
-                width={36}
-                height={36}
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
-                {post.author.username[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-        </Link>
-        <div className="flex-1 min-w-0">
-          <Link
-            href={`/profile/${post.author.username}`}
-            className="font-semibold text-sm hover:underline"
-          >
-            {post.author.username}
-          </Link>
-          {post.location_name && (
-            <p className="text-xs text-gray-400 truncate">{post.location_name}</p>
-          )}
-        </div>
-        {post.is_boosted && (
-          <span className="text-[10px] bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
-            Promoted
-          </span>
-        )}
-      </div>
+  // Swipe handling for image carousel
+  const touchStartX = useRef(0);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!hasMultipleImages) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (diff > 50 && currentImageIndex < post.media_urls.length - 1) {
+      setCurrentImageIndex((i) => i + 1);
+    } else if (diff < -50 && currentImageIndex > 0) {
+      setCurrentImageIndex((i) => i - 1);
+    }
+  };
 
-      {/* Media */}
-      <div className="relative aspect-square bg-gray-100">
+  return (
+    <article
+      className="tiktok-card bg-black"
+      onDoubleClick={handleDoubleTap}
+    >
+      {/* Full-screen media background */}
+      <div
+        className="absolute inset-0"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {post.media_type === 'video' ? (
           <video
+            ref={videoRef}
             src={post.media_urls[0]}
             className="w-full h-full object-cover"
-            controls
+            loop
+            muted
             playsInline
             preload="metadata"
           />
         ) : (
-          <>
-            <Image
-              src={post.media_urls[currentImageIndex]}
-              alt={post.caption || 'Cat post'}
-              fill
-              className="object-cover"
-              loading="lazy"
-              sizes="(max-width: 768px) 100vw, 600px"
-            />
-            {/* Carousel dots */}
-            {hasMultipleImages && (
-              <>
-                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                  {post.media_urls.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentImageIndex(i)}
-                      className={clsx(
-                        'w-1.5 h-1.5 rounded-full transition',
-                        i === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                      )}
-                    />
-                  ))}
-                </div>
-                {/* Prev/Next buttons */}
-                {currentImageIndex > 0 && (
-                  <button
-                    onClick={() => setCurrentImageIndex((i) => i - 1)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 text-white rounded-full flex items-center justify-center"
-                  >
-                    &lt;
-                  </button>
+          <Image
+            src={post.media_urls[currentImageIndex]}
+            alt={post.caption || 'Cat post'}
+            fill
+            className="object-cover"
+            priority={isActive}
+            sizes="100vw"
+          />
+        )}
+
+        {/* Carousel indicators */}
+        {hasMultipleImages && (
+          <div className="absolute top-14 left-0 right-0 flex justify-center gap-1 z-20">
+            {post.media_urls.map((_, i) => (
+              <div
+                key={i}
+                className={clsx(
+                  'h-0.5 rounded-full transition-all',
+                  i === currentImageIndex ? 'w-4 bg-white' : 'w-2 bg-white/40'
                 )}
-                {currentImageIndex < post.media_urls.length - 1 && (
-                  <button
-                    onClick={() => setCurrentImageIndex((i) => i + 1)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/30 text-white rounded-full flex items-center justify-center"
-                  >
-                    &gt;
-                  </button>
-                )}
-              </>
-            )}
-          </>
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Actions */}
-      <div className="px-4 py-2 flex items-center gap-4">
-        <button onClick={handleLikeToggle} className="p-1">
+      {/* Double-tap like animation */}
+      {showLikeAnim && (
+        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <svg className="w-24 h-24 text-accent-pink animate-like-pop drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+        </div>
+      )}
+
+      {/* Top gradient overlay */}
+      <div className="absolute top-0 left-0 right-0 h-24 tiktok-gradient-top z-10" />
+
+      {/* Bottom gradient overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-72 tiktok-gradient-bottom z-10" />
+
+      {/* Right-side action buttons (TikTok style) */}
+      <div className="tiktok-actions">
+        {/* Author avatar */}
+        <Link href={`/profile/${post.author.username}`} className="tiktok-action-btn mb-2">
+          <div className="relative">
+            <div className="w-11 h-11 rounded-full border-2 border-white overflow-hidden bg-dark-elevated">
+              {post.author.avatar_url ? (
+                <Image
+                  src={post.author.avatar_url}
+                  alt={post.author.username}
+                  width={44}
+                  height={44}
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm text-white font-bold">
+                  {post.author.username[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-accent-pink rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">+</span>
+            </div>
+          </div>
+        </Link>
+
+        {/* Like */}
+        <button onClick={handleLikeToggle} className="tiktok-action-btn">
           <svg
-            className={clsx('w-6 h-6', post.is_liked ? 'text-red-500' : 'text-gray-700')}
+            className={clsx(
+              'w-8 h-8 drop-shadow-lg transition-colors',
+              post.is_liked ? 'text-accent-pink' : 'text-white'
+            )}
             viewBox="0 0 24 24"
-            fill={post.is_liked ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            strokeWidth={post.is_liked ? 0 : 1.5}
+            fill="currentColor"
           >
             <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
           </svg>
+          <span>{post.like_count > 0 ? formatCount(post.like_count) : 'Like'}</span>
         </button>
-        <Link href={`/feed/${post.id}`} className="p-1">
-          <svg className="w-6 h-6 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+
+        {/* Comment */}
+        <Link href={`/feed/${post.id}`} className="tiktok-action-btn">
+          <svg className="w-8 h-8 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4.913 2.658c2.075-.27 4.19-.408 6.337-.408 2.147 0 4.262.139 6.337.408 1.922.25 3.291 1.861 3.405 3.727a4.403 4.403 0 00-1.032-.211 50.89 50.89 0 00-8.42 0c-2.358.196-4.04 2.19-4.04 4.434v4.286a4.47 4.47 0 002.433 3.984L7.28 21.53A.75.75 0 016 21v-4.03a48.527 48.527 0 01-1.087-.128C2.905 16.58 1.5 14.833 1.5 12.862V6.638c0-1.97 1.405-3.718 3.413-3.979z" />
+            <path d="M15.75 7.5c-1.376 0-2.739.057-4.086.169C10.124 7.797 9 9.103 9 10.609v4.285c0 1.507 1.128 2.814 2.67 2.94 1.243.102 2.5.157 3.768.165l2.782 2.781a.75.75 0 001.28-.53v-2.39l.33-.026c1.542-.125 2.67-1.433 2.67-2.94v-4.286c0-1.505-1.125-2.811-2.664-2.94A49.392 49.392 0 0015.75 7.5z" />
           </svg>
+          <span>{post.comment_count > 0 ? formatCount(post.comment_count) : 'Comment'}</span>
         </Link>
+
+        {/* Share */}
         <button
-          className="p-1"
+          className="tiktok-action-btn"
           onClick={() => {
             if (navigator.share) {
               navigator.share({ url: `${window.location.origin}/feed/${post.id}` });
             }
           }}
         >
-          <svg className="w-6 h-6 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+          <svg className="w-8 h-8 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+            <path fillRule="evenodd" d="M15.75 4.5a3 3 0 11.825 2.066l-8.421 4.679a3.002 3.002 0 010 1.51l8.421 4.679a3 3 0 11-.729 1.31l-8.421-4.678a3 3 0 110-4.132l8.421-4.679a3 3 0 01-.096-.755z" clipRule="evenodd" />
           </svg>
+          <span>Share</span>
         </button>
       </div>
 
-      {/* Likes & Caption */}
-      <div className="px-4 pb-3">
-        {post.like_count > 0 && (
-          <p className="font-semibold text-sm">
-            {post.like_count.toLocaleString()} {post.like_count === 1 ? 'like' : 'likes'}
-          </p>
+      {/* Bottom-left info overlay (author + caption) */}
+      <div className="tiktok-info">
+        {/* Author name */}
+        <Link
+          href={`/profile/${post.author.username}`}
+          className="font-bold text-base text-white drop-shadow-lg"
+        >
+          @{post.author.username}
+        </Link>
+
+        {post.is_boosted && (
+          <span className="ml-2 text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+            Sponsored
+          </span>
         )}
+
+        {/* Caption */}
         {post.caption && (
-          <p className="text-sm mt-1">
-            <Link href={`/profile/${post.author.username}`} className="font-semibold mr-1">
-              {post.author.username}
-            </Link>
-            {post.caption.length > 120 && !showFullCaption ? (
+          <p className="text-sm text-white/90 mt-1.5 drop-shadow leading-5">
+            {post.caption.length > 80 && !showFullCaption ? (
               <>
-                {post.caption.slice(0, 120)}...
+                {post.caption.slice(0, 80)}...
                 <button
-                  onClick={() => setShowFullCaption(true)}
-                  className="text-gray-400 ml-1"
+                  onClick={(e) => { e.stopPropagation(); setShowFullCaption(true); }}
+                  className="text-white/60 ml-1 font-medium"
                 >
                   more
                 </button>
@@ -183,18 +229,38 @@ export function CatFeedCard({ post }: CatFeedCardProps) {
             )}
           </p>
         )}
-        {post.comment_count > 0 && (
-          <Link
-            href={`/feed/${post.id}`}
-            className="text-sm text-gray-400 mt-1 block"
-          >
-            View all {post.comment_count} comments
-          </Link>
+
+        {/* Hashtags */}
+        {post.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {post.hashtags.slice(0, 3).map((tag) => (
+              <span key={tag} className="text-sm text-white font-medium">
+                #{tag}
+              </span>
+            ))}
+          </div>
         )}
-        <time className="text-xs text-gray-300 mt-1 block">
-          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-        </time>
+
+        {/* Location + time */}
+        <div className="flex items-center gap-2 mt-1.5 text-xs text-white/50">
+          {post.location_name && (
+            <>
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742z" clipRule="evenodd" />
+              </svg>
+              <span>{post.location_name}</span>
+              <span>-</span>
+            </>
+          )}
+          <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+        </div>
       </div>
     </article>
   );
+}
+
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toString();
 }
