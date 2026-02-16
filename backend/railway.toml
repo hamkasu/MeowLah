@@ -1,9 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm install && npm run build"
+buildCommand = "unset NPM_CONFIG_PRODUCTION && npm install && npm run build"
 
 [deploy]
-startCommand = "npm run start"
+startCommand = "unset NPM_CONFIG_PRODUCTION && npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
