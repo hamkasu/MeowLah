@@ -147,7 +147,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Display Name */}
       <div>
-        <label htmlFor="reg-display-name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reg-display-name" className="block text-sm font-medium text-white/70 mb-1">
           Display Name
         </label>
         <input
@@ -157,8 +157,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           value={form.display_name}
           onChange={(e) => updateField('display_name', e.target.value)}
           placeholder="How others will see you"
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400 ${
-            errors.display_name ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30 ${
+            errors.display_name ? 'border-red-400' : 'border-dark-border'
           }`}
         />
         {fieldError('display_name')}
@@ -166,7 +166,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* Username */}
       <div>
-        <label htmlFor="reg-username" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reg-username" className="block text-sm font-medium text-white/70 mb-1">
           Username
         </label>
         <input
@@ -176,17 +176,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           value={form.username}
           onChange={(e) => updateField('username', e.target.value.toLowerCase())}
           placeholder="your_username"
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400 ${
-            errors.username ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30 ${
+            errors.username ? 'border-red-400' : 'border-dark-border'
           }`}
         />
-        <p className="mt-1 text-xs text-gray-400">3-50 characters, letters, numbers, and underscores only</p>
+        <p className="mt-1 text-xs text-white/30">3-50 characters, letters, numbers, and underscores only</p>
         {fieldError('username')}
       </div>
 
       {/* Email */}
       <div>
-        <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reg-email" className="block text-sm font-medium text-white/70 mb-1">
           Email
         </label>
         <input
@@ -196,8 +196,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           value={form.email}
           onChange={(e) => updateField('email', e.target.value)}
           placeholder="you@example.com"
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400 ${
-            errors.email ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30 ${
+            errors.email ? 'border-red-400' : 'border-dark-border'
           }`}
         />
         {fieldError('email')}
@@ -205,7 +205,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* Password */}
       <div>
-        <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reg-password" className="block text-sm font-medium text-white/70 mb-1">
           Password
         </label>
         <input
@@ -215,8 +215,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           value={form.password}
           onChange={(e) => updateField('password', e.target.value)}
           placeholder="Min. 8 characters"
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400 ${
-            errors.password ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30 ${
+            errors.password ? 'border-red-400' : 'border-dark-border'
           }`}
         />
         {fieldError('password')}
@@ -224,7 +224,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* Confirm Password */}
       <div>
-        <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-white/70 mb-1">
           Confirm Password
         </label>
         <input
@@ -234,8 +234,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           value={form.confirm_password}
           onChange={(e) => updateField('confirm_password', e.target.value)}
           placeholder="Re-enter your password"
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition text-gray-900 placeholder:text-gray-400 ${
-            errors.confirm_password ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-4 py-3 border rounded-lg bg-dark-elevated focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent transition text-white placeholder:text-white/30 ${
+            errors.confirm_password ? 'border-red-400' : 'border-dark-border'
           }`}
         />
         {fieldError('confirm_password')}
@@ -248,12 +248,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           type="checkbox"
           checked={form.accept_terms}
           onChange={(e) => updateField('accept_terms', e.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
+          className="mt-1 h-4 w-4 rounded border-dark-border bg-dark-elevated text-accent-pink focus:ring-accent-pink/50"
         />
-        <label htmlFor="reg-terms" className="text-sm text-gray-600 leading-snug">
+        <label htmlFor="reg-terms" className="text-sm text-white/50 leading-snug">
           I agree to the{' '}
-          <span className="text-primary-600 font-medium">Terms of Service</span> and{' '}
-          <span className="text-primary-600 font-medium">Privacy Policy</span>
+          <span className="text-accent-cyan font-medium">Terms of Service</span> and{' '}
+          <span className="text-accent-cyan font-medium">Privacy Policy</span>
         </label>
       </div>
       {errors.accept_terms && (
@@ -264,7 +264,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 active:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 bg-accent-pink text-white font-semibold rounded-lg hover:bg-accent-pink/90 active:bg-accent-pink/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
@@ -289,9 +289,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </button>
 
       {/* Login link */}
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-white/40">
         Already have an account?{' '}
-        <Link href="/login" className="text-primary-600 font-medium hover:underline">
+        <Link href="/login" className="text-accent-cyan font-medium hover:underline">
           Login
         </Link>
       </p>

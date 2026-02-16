@@ -31,18 +31,18 @@ export default function CatFinderPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3">
+      <header className="sticky top-0 z-40 bg-dark-card/95 backdrop-blur-md border-b border-dark-border px-4 py-3">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <h1 className="text-lg font-bold text-gray-900">CatFinder</h1>
+          <h1 className="text-lg font-bold text-white">CatFinder</h1>
           <div className="flex items-center gap-2">
             {/* View toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <div className="flex bg-dark-elevated rounded-lg p-0.5">
               <button
                 onClick={() => setView('map')}
                 className={`px-3 py-1 text-xs rounded-md transition ${
-                  view === 'map' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                  view === 'map' ? 'bg-dark-border text-white' : 'text-white/50'
                 }`}
               >
                 Map
@@ -50,7 +50,7 @@ export default function CatFinderPage() {
               <button
                 onClick={() => setView('list')}
                 className={`px-3 py-1 text-xs rounded-md transition ${
-                  view === 'list' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                  view === 'list' ? 'bg-dark-border text-white' : 'text-white/50'
                 }`}
               >
                 List
@@ -58,7 +58,7 @@ export default function CatFinderPage() {
             </div>
             <Link
               href="/lost-cats/new"
-              className="bg-alert-urgent text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
+              className="bg-accent-pink text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
             >
               + Report Lost
             </Link>
@@ -77,7 +77,7 @@ export default function CatFinderPage() {
         <div className="h-[calc(100vh-120px)]">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-400">Loading map...</p>
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             </div>
           ) : (
             <MapView lostCats={lostCats} foundCats={foundCats} />
@@ -86,13 +86,13 @@ export default function CatFinderPage() {
       ) : (
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
           {lostCats.length === 0 && !isLoading && (
-            <p className="text-center text-gray-400 py-10">No active lost cat reports nearby.</p>
+            <p className="text-center text-white/40 py-10">No active lost cat reports nearby.</p>
           )}
           {lostCats.map((cat) => (
             <Link
               key={cat.id}
               href={`/lost-cats/${cat.id}`}
-              className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition"
+              className="block bg-dark-card rounded-xl p-4 border border-dark-border hover:border-dark-elevated transition"
             >
               <div className="flex gap-3">
                 {cat.photo_urls[0] && (
@@ -104,19 +104,19 @@ export default function CatFinderPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-accent-pink/20 text-accent-pink px-2 py-0.5 rounded-full font-medium">
                       LOST
                     </span>
                     {cat.is_boosted && (
-                      <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded-full">
                         URGENT
                       </span>
                     )}
                   </div>
-                  <h3 className="font-semibold mt-1">{cat.name}</h3>
-                  <p className="text-xs text-gray-500 truncate">{cat.description}</p>
+                  <h3 className="font-semibold mt-1 text-white">{cat.name}</h3>
+                  <p className="text-xs text-white/50 truncate">{cat.description}</p>
                   {cat.reward_amount && (
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p className="text-xs text-alert-found font-medium mt-1">
                       Reward: RM{cat.reward_amount}
                     </p>
                   )}

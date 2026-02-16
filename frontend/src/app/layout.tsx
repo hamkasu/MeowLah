@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'MeowLah',
   },
   openGraph: {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ee7a10',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -43,11 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-black text-white`}>
         <Providers>
           <ServiceWorkerRegistrar />
           <InstallPrompt />
-          <main className="pb-16">{children}</main>
+          <main>{children}</main>
           <BottomNav />
         </Providers>
       </body>

@@ -151,14 +151,14 @@ export function CreatePostForm() {
           {...getRootProps()}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
             isDragActive
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              ? 'border-accent-pink bg-accent-pink/10'
+              : 'border-dark-border hover:border-white/30 hover:bg-dark-elevated'
           }`}
         >
           <input {...getInputProps()} />
           <div className="space-y-2">
             <svg
-              className="mx-auto w-10 h-10 text-gray-400"
+              className="mx-auto w-10 h-10 text-white/30"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -171,16 +171,16 @@ export function CreatePostForm() {
               />
             </svg>
             {isDragActive ? (
-              <p className="text-sm text-primary-600 font-medium">
+              <p className="text-sm text-accent-pink font-medium">
                 Drop your files here...
               </p>
             ) : (
               <>
-                <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-primary-600">Click to upload</span>{' '}
+                <p className="text-sm text-white/60">
+                  <span className="font-semibold text-accent-cyan">Click to upload</span>{' '}
                   or drag and drop
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-white/30">
                   Images (JPG, PNG, WebP, GIF) or Video (MP4, MOV). Max 50 MB each.
                 </p>
               </>
@@ -194,7 +194,7 @@ export function CreatePostForm() {
             {files.map((filePreview, index) => (
               <div
                 key={`${filePreview.file.name}-${index}`}
-                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group"
+                className="relative aspect-square rounded-lg overflow-hidden bg-dark-surface group"
               >
                 {filePreview.type === 'video' ? (
                   <video
@@ -230,7 +230,7 @@ export function CreatePostForm() {
 
       {/* Caption */}
       <div>
-        <label htmlFor="caption" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="caption" className="block text-sm font-medium text-white/70 mb-1">
           Caption
         </label>
         <textarea
@@ -239,17 +239,17 @@ export function CreatePostForm() {
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Write a caption for your cat post..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+          className="w-full rounded-lg border border-dark-border bg-dark-elevated px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent resize-none"
           maxLength={2200}
         />
-        <p className="text-xs text-gray-400 text-right mt-0.5">
+        <p className="text-xs text-white/30 text-right mt-0.5">
           {caption.length}/2200
         </p>
       </div>
 
       {/* Hashtags */}
       <div>
-        <label htmlFor="hashtags" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="hashtags" className="block text-sm font-medium text-white/70 mb-1">
           Hashtags
         </label>
         <input
@@ -258,16 +258,16 @@ export function CreatePostForm() {
           value={hashtags}
           onChange={(e) => setHashtags(e.target.value)}
           placeholder="#meowlah #catsofmalaysia #streetcat"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full rounded-lg border border-dark-border bg-dark-elevated px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent"
         />
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-white/30 mt-0.5">
           Separate with spaces or commas
         </p>
       </div>
 
       {/* Location */}
       <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="location" className="block text-sm font-medium text-white/70 mb-1">
           Location
         </label>
         <input
@@ -276,13 +276,13 @@ export function CreatePostForm() {
           value={locationName}
           onChange={(e) => setLocationName(e.target.value)}
           placeholder="e.g. Petaling Jaya, Kuala Lumpur"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full rounded-lg border border-dark-border bg-dark-elevated px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:border-transparent"
         />
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+        <div className="bg-accent-pink/10 border border-accent-pink/30 text-accent-pink text-sm px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
@@ -291,12 +291,12 @@ export function CreatePostForm() {
       {isSubmitting && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Uploading...</span>
-            <span className="font-medium text-primary-600">{uploadProgress}%</span>
+            <span className="text-white/60">Uploading...</span>
+            <span className="font-medium text-accent-cyan">{uploadProgress}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-dark-elevated rounded-full h-2 overflow-hidden">
             <div
-              className="bg-primary-500 h-full rounded-full transition-all duration-300"
+              className="bg-accent-pink h-full rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
@@ -307,7 +307,7 @@ export function CreatePostForm() {
       <button
         type="submit"
         disabled={isSubmitting || files.length === 0}
-        className="w-full py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className="w-full py-3 bg-accent-pink text-white font-semibold rounded-lg hover:bg-accent-pink/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
       >
         {isSubmitting ? 'Posting...' : 'Share Post'}
       </button>

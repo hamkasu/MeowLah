@@ -49,12 +49,12 @@ export function InstallPrompt() {
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl p-6 shadow-xl animate-float-up">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-sm bg-dark-card rounded-t-2xl sm:rounded-2xl p-6 shadow-xl animate-float-up border border-dark-border">
         <div className="text-center">
           <div className="text-4xl mb-3">🐱</div>
-          <h2 className="text-xl font-bold text-gray-900">Install MeowLah</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-xl font-bold text-white">Install MeowLah</h2>
+          <p className="mt-2 text-sm text-white/60">
             Add MeowLah to your home screen for quick access to cat posts,
             lost cat alerts, and memorial pages — even offline!
           </p>
@@ -63,13 +63,13 @@ export function InstallPrompt() {
         <div className="mt-6 flex flex-col gap-3">
           <button
             onClick={handleInstall}
-            className="w-full py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition"
+            className="w-full py-3 bg-accent-pink text-white font-semibold rounded-xl hover:bg-accent-pink/90 transition"
           >
             Install App
           </button>
           <button
             onClick={handleDismiss}
-            className="w-full py-3 text-gray-500 hover:text-gray-700 text-sm transition"
+            className="w-full py-3 text-white/40 hover:text-white/60 text-sm transition"
           >
             Maybe Later
           </button>

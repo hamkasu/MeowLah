@@ -8,12 +8,85 @@
   }
 
   body {
-    @apply antialiased text-gray-900 bg-white;
+    @apply antialiased text-white bg-black;
+  }
+
+  /* Hide scrollbar for TikTok-style full-screen scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
 @layer components {
-  /* Memorial page styles — respectful, grief-safe design */
+  /* TikTok-style full-screen snap scroll container */
+  .tiktok-feed {
+    @apply h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide;
+  }
+
+  /* Each post takes up full viewport */
+  .tiktok-card {
+    @apply h-[100dvh] w-full snap-start snap-always relative overflow-hidden;
+  }
+
+  /* Gradient overlay on media for text readability */
+  .tiktok-gradient-bottom {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.4) 40%,
+      transparent 100%
+    );
+  }
+
+  .tiktok-gradient-top {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.5) 0%,
+      transparent 100%
+    );
+  }
+
+  /* Right-side action bar (TikTok style) */
+  .tiktok-actions {
+    @apply absolute right-3 bottom-32 flex flex-col items-center gap-5 z-20;
+  }
+
+  .tiktok-action-btn {
+    @apply flex flex-col items-center gap-1;
+  }
+
+  .tiktok-action-btn span {
+    @apply text-xs text-white font-medium;
+  }
+
+  /* Bottom info overlay (author, caption) */
+  .tiktok-info {
+    @apply absolute bottom-20 left-4 right-16 z-20;
+  }
+
+  /* Spinning profile avatar (like TikTok record) */
+  .tiktok-avatar-ring {
+    @apply w-12 h-12 rounded-full border-2 border-white overflow-hidden;
+  }
+
+  /* Tab pills (For You / Following) */
+  .tiktok-tab {
+    @apply text-base font-semibold px-1 py-1 transition-all;
+  }
+
+  .tiktok-tab-active {
+    @apply text-white;
+  }
+
+  .tiktok-tab-inactive {
+    @apply text-white/50;
+  }
+
+  /* Memorial page styles */
   .memorial-container {
     @apply font-memorial bg-memorial-50 min-h-screen;
   }
@@ -22,7 +95,6 @@
     @apply text-3xl font-semibold text-memorial-800 tracking-wide;
   }
 
-  /* Candle animation */
   .candle-flame {
     width: 12px;
     height: 24px;
