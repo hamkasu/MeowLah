@@ -1,6 +1,6 @@
 import multer from 'multer';
 
-// In-memory storage — files go to S3, not disk
+// In-memory storage — files are converted to base64 and stored in PostgreSQL
 const storage = multer.memoryStorage();
 
 // File filter — only images and videos
