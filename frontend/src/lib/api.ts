@@ -94,6 +94,7 @@ export async function uploadWithProgress(
 ) {
   return api.post(url, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000, // 2 minutes for file uploads
     onUploadProgress: (event) => {
       if (event.total && onProgress) {
         onProgress(Math.round((event.loaded * 100) / event.total));
