@@ -13,13 +13,6 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 
-  S3_ENDPOINT: process.env.S3_ENDPOINT || '',
-  S3_BUCKET: process.env.S3_BUCKET || 'meowlah-media',
-  S3_ACCESS_KEY: process.env.S3_ACCESS_KEY || '',
-  S3_SECRET_KEY: process.env.S3_SECRET_KEY || '',
-  S3_REGION: process.env.S3_REGION || 'auto',
-  S3_PUBLIC_URL: process.env.S3_PUBLIC_URL || '',
-
   VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || 'mailto:admin@meowlah.my',

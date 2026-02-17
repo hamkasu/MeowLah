@@ -7,21 +7,6 @@ const nextConfig = {
   // Enable React strict mode for better development practices
   reactStrictMode: true,
 
-  // Image optimization configuration for S3-hosted media
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.r2.cloudflarestorage.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media.meowlah.my',
-      },
-    ],
-    formats: ['image/avif', 'image/webp'],
-  },
-
   // Headers for PWA and security
   async headers() {
     return [
