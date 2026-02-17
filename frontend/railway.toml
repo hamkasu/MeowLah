@@ -1,9 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "unset NPM_CONFIG_PRODUCTION && npm install && npm run build"
+buildCommand = "npm install --include=dev && npm run build"
 
 [deploy]
-startCommand = "unset NPM_CONFIG_PRODUCTION && HOSTNAME=0.0.0.0 PORT=3000 npm start"
+startCommand = "HOSTNAME=0.0.0.0 PORT=3000 npm start"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
