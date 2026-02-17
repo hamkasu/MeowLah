@@ -40,7 +40,7 @@ export default function FeedPage() {
 
   // Load more when reaching near the end
   useEffect(() => {
-    if (activeIndex >= posts.length - 2 && hasMore && !isLoading) {
+    if (posts.length > 0 && activeIndex >= posts.length - 3 && hasMore && !isLoading) {
       fetchFeed();
     }
   }, [activeIndex, posts.length, hasMore, isLoading, fetchFeed]);
