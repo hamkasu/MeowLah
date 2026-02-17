@@ -27,9 +27,20 @@ postsRouter.post(
         )
       );
 
-      const hashtags = req.body.hashtags
-        ? (typeof req.body.hashtags === 'string' ? JSON.parse(req.body.hashtags) : req.body.hashtags)
-        : [];
+      let hashtags: string[] = [];
+      if (req.body.hashtags) {
+        if (Array.isArray(req.body.hashtags)) {
+          hashtags = req.body.hashtags;
+        } else if (typeof req.body.hashtags === 'string') {
+          try {
+            const parsed = JSON.parse(req.body.hashtags);
+            hashtags = Array.isArray(parsed) ? parsed : [req.body.hashtags];
+          } catch {
+            // Plain string like "#kucing" or "#kucing,#cat" — split by comma/space
+            hashtags = req.body.hashtags.split(/[,\s]+/).filter(Boolean);
+          }
+        }
+      }
 
       const post = await prisma.post.create({
         data: {
