@@ -2,11 +2,15 @@ import Redis from 'ioredis';
 import { env } from './env';
 
 let redis: Redis | null = null;
+let redisWarningLogged = false;
 
 function getRedis(): Redis | null {
   if (redis) return redis;
   if (!env.REDIS_URL || env.REDIS_URL === 'redis://localhost:6379') {
-    console.warn('[Redis] No REDIS_URL configured, caching disabled');
+    if (!redisWarningLogged) {
+      console.warn('[Redis] No REDIS_URL configured, caching disabled');
+      redisWarningLogged = true;
+    }
     return null;
   }
   try {

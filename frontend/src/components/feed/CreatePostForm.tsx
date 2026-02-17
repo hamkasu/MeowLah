@@ -134,10 +134,15 @@ export function CreatePostForm() {
 
       router.push('/feed');
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to create post. Please try again.';
+      let message = 'Failed to create post. Please try again.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } };
+        message = axiosErr.response?.data?.error || message;
+      } else if (err instanceof Error) {
+        message = err.message === 'Network Error'
+          ? 'Upload failed. Please check your connection and try a smaller image.'
+          : err.message;
+      }
       setError(message);
       setIsSubmitting(false);
     }

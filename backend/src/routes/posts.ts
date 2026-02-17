@@ -66,7 +66,7 @@ postsRouter.post(
       res.status(201).json({
         id: post.id,
         caption: post.caption,
-        media_urls: post.mediaUrls,
+        media_count: post.mediaUrls.length,
         media_type: post.mediaType,
         hashtags: post.hashtags,
         author: post.author,
