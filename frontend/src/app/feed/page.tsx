@@ -40,7 +40,7 @@ export default function FeedPage() {
 
   // Load more when reaching near the end
   useEffect(() => {
-    if (activeIndex >= posts.length - 2 && hasMore && !isLoading) {
+    if (posts.length > 0 && activeIndex >= posts.length - 3 && hasMore && !isLoading) {
       fetchFeed();
     }
   }, [activeIndex, posts.length, hasMore, isLoading, fetchFeed]);
@@ -109,11 +109,24 @@ export default function FeedPage() {
       {/* Auth banner overlay */}
       {!isAuthenticated && (
         <div className="fixed top-14 left-0 right-0 z-40 pointer-events-auto">
-          <div className="mx-4 bg-white/10 backdrop-blur-md rounded-xl px-4 py-2.5 text-center">
-            <p className="text-sm text-white">
-              <Link href="/login" className="font-semibold text-accent-cyan underline">Sign in</Link>
-              {' '}to post and follow cat lovers
+          <div className="mx-4 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-center">
+            <p className="text-sm text-white mb-2">
+              Join Malaysia&apos;s cat community
             </p>
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/login"
+                className="px-5 py-1.5 bg-accent-pink text-white text-sm font-semibold rounded-lg hover:bg-accent-pink/90 transition"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="px-5 py-1.5 bg-white/10 text-white text-sm font-semibold rounded-lg border border-white/20 hover:bg-white/20 transition"
+              >
+                Register
+              </Link>
+            </div>
           </div>
         </div>
       )}

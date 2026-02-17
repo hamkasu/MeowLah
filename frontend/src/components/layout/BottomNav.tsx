@@ -12,7 +12,7 @@ export function BottomNav() {
   // Hide nav on auth pages
   if (pathname === '/login' || pathname === '/register') return null;
 
-  const profileHref = isAuthenticated && user ? `/profile/${user.username}` : '/login';
+  const profileHref = isAuthenticated && user ? `/profile/${user.username}` : '/profile';
   const isFeedPage = pathname === '/feed' || pathname === '/';
 
   return (

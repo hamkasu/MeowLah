@@ -21,9 +21,10 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   posts: [],
   isLoading: false,
   page: 1,
-  hasMore: true,
+  hasMore: false,
 
   fetchFeed: async (reset = false) => {
+    if (get().isLoading) return; // prevent concurrent calls
     const page = reset ? 1 : get().page;
     set({ isLoading: true });
 
@@ -36,7 +37,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         isLoading: false,
       });
     } catch {
-      set({ isLoading: false });
+      set({ isLoading: false, hasMore: false });
     }
   },
 
