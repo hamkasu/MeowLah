@@ -104,8 +104,7 @@ export function CreatePostForm() {
     try {
       const parsedHashtags = hashtags
         .split(/[\s,#]+/)
-        .filter(Boolean)
-        .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`));
+        .filter(Boolean);
 
       const mediaType = files[0].type;
 

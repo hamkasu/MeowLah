@@ -28,6 +28,18 @@ const nextConfig = {
     ];
   },
 
+  // Proxy /v1/* requests to the backend when NEXT_PUBLIC_API_URL is not set.
+  // This avoids CORS issues and means the frontend can call /v1/posts etc.
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+    return [
+      {
+        source: '/v1/:path*',
+        destination: `${backendUrl}/v1/:path*`,
+      },
+    ];
+  },
+
   // Enable experimental features
   experimental: {
     // Optimize package imports for smaller bundles

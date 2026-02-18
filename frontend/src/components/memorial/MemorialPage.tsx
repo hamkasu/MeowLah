@@ -101,13 +101,22 @@ export function MemorialPage({ memorial, condolences: initialCondolences, tribut
       <header className="relative">
         {memorial.cat_photo_url ? (
           <div className="relative h-72 sm:h-96">
-            <Image
-              src={memorial.cat_photo_url}
-              alt={`In memory of ${memorial.cat_name}`}
-              fill
-              className="object-cover"
-              priority
-            />
+            {memorial.cat_photo_url.startsWith('data:') ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={memorial.cat_photo_url}
+                alt={`In memory of ${memorial.cat_name}`}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <Image
+                src={memorial.cat_photo_url}
+                alt={`In memory of ${memorial.cat_name}`}
+                fill
+                className="object-cover"
+                priority
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
           </div>
         ) : (
@@ -159,13 +168,23 @@ export function MemorialPage({ memorial, condolences: initialCondolences, tribut
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {memorial.gallery_urls.map((url, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden">
-                  <Image
-                    src={url}
-                    alt={`Memory of ${memorial.cat_name}`}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
+                  {url.startsWith('data:') ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={url}
+                      alt={`Memory of ${memorial.cat_name}`}
+                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <Image
+                      src={url}
+                      alt={`Memory of ${memorial.cat_name}`}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
               ))}
             </div>
