@@ -103,24 +103,15 @@ export default function ExplorePage() {
             style={{ aspectRatio: idx % 3 === 0 ? '3/4' : '1/1' }}
           >
             {post.media_urls[0] && (
-              post.media_urls[0].startsWith('data:') ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={post.media_urls[0]}
-                  alt={post.caption || 'Cat post'}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              ) : (
-                <Image
-                  src={post.media_urls[0]}
-                  alt={post.caption || 'Cat post'}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  sizes="50vw"
-                />
-              )
+              <Image
+                src={post.media_urls[0]}
+                alt={post.caption || 'Cat post'}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                sizes="50vw"
+                unoptimized={post.media_urls[0].startsWith('data:')}
+              />
             )}
 
             {/* Bottom gradient + stats */}
@@ -129,12 +120,7 @@ export default function ExplorePage() {
               <div className="flex items-center gap-1.5">
                 <div className="w-5 h-5 rounded-full bg-dark-elevated overflow-hidden border border-white/20">
                   {post.author.avatar_url ? (
-                    post.author.avatar_url.startsWith('data:') ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Image src={post.author.avatar_url} alt="" width={20} height={20} className="object-cover" />
-                    )
+                    <Image src={post.author.avatar_url} alt="" width={20} height={20} className="object-cover" unoptimized={post.author.avatar_url.startsWith('data:')} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[8px] text-white font-bold">
                       {post.author.username[0].toUpperCase()}
