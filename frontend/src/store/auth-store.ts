@@ -58,6 +58,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data } = await api.get('/users/me');
       set({ user: data, isAuthenticated: true, isLoading: false });
     } catch {
+      // Token invalid or user no longer exists — clear stale session
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
