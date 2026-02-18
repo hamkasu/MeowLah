@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/auth-store';
 
 export default function FeedPage() {
   const { posts, isLoading, hasMore, fetchFeed } = useFeedStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
   const [activeIndex, setActiveIndex] = useState(0);
   const feedRef = useRef<HTMLDivElement>(null);
@@ -106,8 +106,8 @@ export default function FeedPage() {
         </div>
       </header>
 
-      {/* Auth banner overlay */}
-      {!isAuthenticated && (
+      {/* Auth banner overlay — only show after auth state is resolved */}
+      {!authLoading && !isAuthenticated && (
         <div className="fixed top-14 left-0 right-0 z-40 pointer-events-auto">
           <div className="mx-4 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-center">
             <p className="text-sm text-white mb-2">
