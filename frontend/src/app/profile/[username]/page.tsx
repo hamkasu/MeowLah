@@ -169,22 +169,14 @@ export default function UserProfilePage() {
         {/* Avatar */}
         <div className="w-24 h-24 rounded-full bg-dark-elevated overflow-hidden mx-auto border-2 border-dark-border">
           {profileUser.avatar_url ? (
-            profileUser.avatar_url.startsWith('data:') ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={profileUser.avatar_url}
-                alt={profileUser.display_name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Image
-                src={profileUser.avatar_url}
-                alt={profileUser.display_name}
-                width={96}
-                height={96}
-                className="w-full h-full object-cover"
-              />
-            )
+            <Image
+              src={profileUser.avatar_url}
+              alt={profileUser.display_name}
+              width={96}
+              height={96}
+              className="w-full h-full object-cover"
+              unoptimized={profileUser.avatar_url.startsWith('data:')}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/60">
               {getInitials(profileUser.display_name || profileUser.username)}
@@ -285,24 +277,15 @@ export default function UserProfilePage() {
                 href={`/feed/${post.id}`}
                 className="relative aspect-[3/4] bg-dark-surface overflow-hidden"
               >
-                {post.media_urls[0]?.startsWith('data:') ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={post.media_urls[0]}
-                    alt={post.caption || 'Post'}
-                    className="absolute inset-0 w-full h-full object-cover hover:opacity-90 transition"
-                    loading="lazy"
-                  />
-                ) : (
-                  <Image
-                    src={post.media_urls[0]}
-                    alt={post.caption || 'Post'}
-                    fill
-                    className="object-cover hover:opacity-90 transition"
-                    sizes="(max-width: 768px) 33vw, 170px"
-                    loading="lazy"
-                  />
-                )}
+                <Image
+                  src={post.media_urls[0]}
+                  alt={post.caption || 'Post'}
+                  fill
+                  className="object-cover hover:opacity-90 transition"
+                  sizes="(max-width: 768px) 33vw, 170px"
+                  loading="lazy"
+                  unoptimized={post.media_urls[0]?.startsWith('data:')}
+                />
                 {/* View count overlay */}
                 <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white text-[10px] font-medium">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
