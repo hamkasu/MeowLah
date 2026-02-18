@@ -16,10 +16,11 @@ export async function uploadFile(
   let finalContentType = contentType;
 
   // Optimize images to WebP (skip GIFs to preserve animation)
+  // Use aggressive compression since images are stored as base64 in PostgreSQL
   if (isImage && contentType !== 'image/gif') {
     finalBuffer = await sharp(buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 80 })
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 60 })
       .toBuffer();
     finalContentType = 'image/webp';
   }

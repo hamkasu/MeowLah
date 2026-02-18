@@ -87,6 +87,13 @@ export function CatFeedCard({ post, isActive = false }: CatFeedCardProps) {
             playsInline
             preload="metadata"
           />
+        ) : post.media_urls[currentImageIndex]?.startsWith('data:') ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={post.media_urls[currentImageIndex]}
+            alt={post.caption || 'Cat post'}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         ) : (
           <Image
             src={post.media_urls[currentImageIndex]}
@@ -136,13 +143,22 @@ export function CatFeedCard({ post, isActive = false }: CatFeedCardProps) {
           <div className="relative">
             <div className="w-11 h-11 rounded-full border-2 border-white overflow-hidden bg-dark-elevated">
               {post.author.avatar_url ? (
-                <Image
-                  src={post.author.avatar_url}
-                  alt={post.author.username}
-                  width={44}
-                  height={44}
-                  className="object-cover"
-                />
+                post.author.avatar_url.startsWith('data:') ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={post.author.avatar_url}
+                    alt={post.author.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={post.author.avatar_url}
+                    alt={post.author.username}
+                    width={44}
+                    height={44}
+                    className="object-cover"
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm text-white font-bold">
                   {post.author.username[0].toUpperCase()}

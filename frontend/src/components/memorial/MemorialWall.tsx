@@ -113,13 +113,23 @@ function MemorialCard({ memorial }: { memorial: Memorial }) {
       {/* Photo */}
       <div className="relative h-48 bg-memorial-100">
         {memorial.cat_photo_url ? (
-          <Image
-            src={memorial.cat_photo_url}
-            alt={memorial.cat_name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
+          memorial.cat_photo_url.startsWith('data:') ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={memorial.cat_photo_url}
+              alt={memorial.cat_name}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+          ) : (
+            <Image
+              src={memorial.cat_photo_url}
+              alt={memorial.cat_name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+          )
         ) : (
           <div className="flex items-center justify-center h-full text-4xl text-memorial-300">
             🐱

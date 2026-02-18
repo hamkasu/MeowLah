@@ -59,7 +59,7 @@ export function AvatarUploader({ currentAvatarUrl, displayName }: AvatarUploader
       const formData = new FormData();
       formData.append('avatar', file);
 
-      await api.put('/v1/users/me/avatar', formData, {
+      await api.put('/users/me/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (event) => {
           if (event.total) {
@@ -97,13 +97,22 @@ export function AvatarUploader({ currentAvatarUrl, displayName }: AvatarUploader
       >
         {/* Avatar Image or Initials */}
         {preview ? (
-          <Image
-            src={preview}
-            alt={displayName}
-            width={96}
-            height={96}
-            className="w-full h-full object-cover"
-          />
+          preview.startsWith('data:') || preview.startsWith('blob:') ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={preview}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Image
+              src={preview}
+              alt={displayName}
+              width={96}
+              height={96}
+              className="w-full h-full object-cover"
+            />
+          )
         ) : (
           <div className="w-full h-full bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary-500">
             {getInitials(displayName || 'U')}
